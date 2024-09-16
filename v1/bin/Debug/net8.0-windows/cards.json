@@ -1,0 +1,330 @@
+[
+    {
+        "id": 1,
+        "ATK": 3,
+        "DEF": 3,
+        "description": "Takes 1 less damage from the Raid Boss",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\units\\ronin_warrior.png",
+        "name": "Ronin Warrior",
+        "type": "Unit"
+    },
+    {
+        "id": 2,
+        "ATK": 4,
+        "DEF": 1,
+        "description": "Can attack twice the turn it is summoned",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\units\\ninja_assassin.png",
+        "name": "Ninja Assassin",
+        "type": "Unit"
+    },
+    {
+        "id": 3,
+        "ATK": 1,
+        "DEF": 4,
+        "description": "All other units gain +1 DEF while this unit is on the field.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\units\\samurai_defender.png",
+        "name": "Samurai Defender",
+        "type": "Unit"
+    },
+    {
+        "id": 4,
+        "ATK": 2,
+        "DEF": 2,
+        "description": "Gains +1 ATK after each attack on the Raid Boss.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\units\\rider.png",
+        "name": "Rider",
+        "type": "Unit"
+    },
+    {
+        "id": 5,
+        "ATK": 1,
+        "DEF": 1,
+        "description": "Upon summoning, look at the top 3 cards of the deck and put them back in any order.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\units\\shinobi_spy.png",
+        "name": "Shinobi Spy",
+        "type": "Unit"
+    },
+    {
+        "id": 6,
+        "ATK": 2,
+        "DEF": 2,
+        "description": "Upon summoning, deal 1 damage to both the raid boss and all other enemy units in the game.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\units\\onmyoji_mage.png",
+        "name": "Onmyoji Mage",
+        "type": "Unit"
+    },
+    {
+        "id": 7,
+        "ATK": 3,
+        "DEF": 1,
+        "description": "If it's your first unit to attack this turn, gain +2 ATK for the attack.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\units\\spearman.png",
+        "name": "Spearman",
+        "type": "Unit"
+    },
+    {
+        "id": 8,
+        "ATK": 3,
+        "DEF": 2,
+        "description": "Can taunt an enemy unit to attack them.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\units\\swordsman.png",
+        "name": "Swordsman",
+        "type": "Unit"
+    },
+    {
+        "id": 9,
+        "ATK": 1,
+        "DEF": 3,
+        "description": "Restores 1 DEF to an allied unit each turn.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\units\\healer.png",
+        "name": "Healer",
+        "type": "Unit"
+    },
+    {
+        "id": 10,
+        "ATK": 4,
+        "DEF": 2,
+        "description": "Can attack twice but takes 1 damage.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\units\\katana_master.png",
+        "name": "Katana Master",
+        "type": "Unit"
+    },
+    {
+        "id": 11,
+        "ATK": 1,
+        "DEF": 5,
+        "description": "Absorbs the first attack directed at any allied unit. Does not apply to AoE attacks.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\units\\shield_bearer.png",
+        "name": "Shield Bearer",
+        "type": "Unit"
+    },
+    {
+        "id": 12,
+        "ATK": 2,
+        "DEF": 3,
+        "description": "Deals +1 damage if there are no enemy units on the field.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\units\\bowman.png",
+        "name": "Bowman",
+        "type": "Unit"
+    },
+    {
+        "id": 13,
+        "ATK": 3,
+        "DEF": 2,
+        "description": "Upon attacking +1 ATK and -1 DEF. The turn it does not attack, -1 ATK and +1 DEF.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\units\\fist_fighter.png",
+        "name": "Fist Fighter",
+        "type": "Unit"
+    },
+    {
+        "id": 14,
+        "ATK": 3,
+        "DEF": 3,
+        "description": "All allied units gain +1 ATK while this unit is on the field.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\units\\ronin_leader.png",
+        "name": "Ronin Leader",
+        "type": "Unit"
+    },
+    {
+        "id": 15,
+        "ATK": 1,
+        "DEF": 1,
+        "description": "Gains +1 ATK and +1 DEF for each spell played while on the field.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\units\\battle_monk.png",
+        "name": "Battle Monk",
+        "type": "Unit"
+    },
+    {
+        "id": 16,
+        "ATK": 2,
+        "DEF": 2,
+        "description": "Immune to enemy sabotage card effects.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\units\\shadow_ninja.png",
+        "name": "Shadow Ninja",
+        "type": "Unit"
+    },
+    {
+        "id": 17,
+        "ATK": 3,
+        "DEF": 2,
+        "description": "Gains +1 ATK when attacking the Raid Boss.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\units\\horseman.png",
+        "name": "Horseman",
+        "type": "Unit"
+    },
+    {
+        "id": 18,
+        "ATK": 3,
+        "DEF": 4,
+        "description": "Can redirect the effect of a sabotage card aimed at another unit to itself.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\units\\samurai_general.png",
+        "name": "Samurai General",
+        "type": "Unit"
+    },
+    {
+        "id": 19,
+        "ATK": 2,
+        "DEF": 2,
+        "description": "Gains +2 ATK and +2 DEF if there are no other allied units in play.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\units\\kunoichi.png",
+        "name": "Kunoichi",
+        "type": "Unit"
+    },
+    {
+        "id": 20,
+        "ATK": 3,
+        "DEF": 2,
+        "description": "Gain +2 ATK if it has less than full DEF.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\units\\warrior_monk.png",
+        "name": "Warrior Monk",
+        "type": "Unit"
+    },
+	{
+        "id": 21,
+        "name": "Fireball",
+        "description": "Deal 3 damage to the Raid Boss.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\spells\\fireball.png",
+        "type":"Spell"
+    },
+    {
+        "id": 22,
+        "name": "Healing Wind",
+        "description": "Restore 2 DEF to one of your units.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\spells\\healing_wind.png",
+        "type":"Spell"
+    },
+    {
+        "id": 23,
+        "name": "Lightning Strike",
+        "description": "Deal 2 damage to two different enemy units.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\spells\\lightning_strike.png",
+        "type":"Spell"
+    },
+    {
+        "id": 24,
+        "name": "Shield of Light",
+        "description": "Give one unit +2 DEF for this turn.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\spells\\shield_of_light.png",
+        "type":"Spell"
+    },
+    {
+        "id": 25,
+        "name": "Arcane Barrier",
+        "description": "Choose an ally unit to not take any damage this turn.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\spells\\arcane_barrier.png",
+        "type":"Spell"
+    },
+    {
+        "id": 26,
+        "name": "Summon Reinforcements",
+        "description": "Draw two additional cards.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\spells\\summon_reinforcements.png",
+        "type":"Spell"
+    },
+    {
+        "id": 27,
+        "name": "Mystic Fog",
+        "description": "-1 ATK for all enemy units for 3 turns.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\spells\\mystic_fog.png",
+        "type":"Spell"
+    },
+    {
+        "id": 28,
+        "name": "Energy Surge",
+        "description": "Give one unit +3 ATK until the end of your turn.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\spells\\energy_surge.png",
+        "type":"Spell"
+    },
+    {
+        "id": 29,
+        "name": "Rejuvenation",
+        "description": "+1 DEF for all allied units.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\spells\\rejuvenation.png",
+        "type":"Spell"
+    },
+    {
+        "id": 30,
+        "name": "Recall",
+        "description": "Return an allied unit in play to the hand.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\spells\\recall.png",
+        "type":"Spell"
+    },
+	{
+        "id": 31,
+        "name": "Poison",
+        "description": "Target enemy unit loses 2 ATK for the next two turns.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\sabotage\\poison.png",
+        "type":"Sabotage"
+    },
+    {
+        "id": 32,
+        "name": "Betrayal",
+        "description": "Swap control of one of your units with an opponent’s unit.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\sabotage\\betrayal.png",
+        "type":"Sabotage"
+    },
+    {
+        "id": 33,
+        "name": "Stolen Plans",
+        "description": "Look at an opponent’s hand and discard one card.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\sabotage\\stolen_plans.png",
+        "type":"Sabotage"
+    },
+    {
+        "id": 34,
+        "name": "Disarm",
+        "description": "Target enemy unit cannot attack during its next turn.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\sabotage\\disarm.png",
+        "type":"Sabotage"
+    },
+    {
+        "id": 35,
+        "name": "Curse",
+        "description": "Target enemy unit takes 1 damage if it attacks that turn.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\sabotage\\curse.png",
+        "type":"Sabotage"
+    },
+    {
+        "id": 36,
+        "name": "Sabotage Supplies",
+        "description": "Choose an opponent. They skip their next draw phase.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\sabotage\\sabotage_supplies.png",
+        "type":"Sabotage"
+    },
+    {
+        "id": 37,
+        "name": "Counterspell",
+        "description": "Negate the description of an opponent’s spell card.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\sabotage\\counterspell.png",
+        "type":"Sabotage"
+    },
+    {
+        "id": 38,
+        "name": "Blindside",
+        "description": "Target enemy unit cannot use their special ability.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\sabotage\\blindside.png",
+        "type":"Sabotage"
+    },
+    {
+        "id": 39,
+        "name": "Weaken Resolve",
+        "description": "All enemy units lose 1 ATK for the next turn.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\sabotage\\weaken_resolve.png",
+        "type":"Sabotage"
+    },
+    {
+        "id": 40,
+        "name": "Confusion",
+        "description": "Opponent must discard a random card from their hand.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\sabotage\\confusion.png",
+        "type":"Sabotage"
+    },
+	{
+		"id": 41,
+		"DEF": 50,
+		"name": "Ishi Yakura, The Demonic Ronin",
+		"description": "Deals 1 damage to all units every turn.\n@35 HP: Increased damage to 2 per turn.\n@25 HP: Gains 10 damage absorpiton shield.\n@15 HP: Instantly destroys every unit on the field.",
+        "imagePath": "G:\\Projects\\SimpleCardCreator\\bin\\Debug\\net8.0-windows\\backgrounds\\raid_boss\\ishi_yakura.jpeg",
+		"type": "Raid Boss"
+	}
+]
