@@ -1,0 +1,50 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\iRewiewer\\Documents\\Github Tmp\\SimpleCardCreator\\v1\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{C42FB5DC-B2C4-48E4-8C00-1CF07BBE806A}|SimpleCardCreator.csproj|c:\\users\\irewiewer\\documents\\github tmp\\simplecardcreator\\v1\\mainapp.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{C42FB5DC-B2C4-48E4-8C00-1CF07BBE806A}|SimpleCardCreator.csproj|solutionrelative:mainapp.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "MainApp.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\iRewiewer\\Documents\\Github Tmp\\SimpleCardCreator\\v1\\MainApp.cs",
+              "RelativeDocumentMoniker": "MainApp.cs",
+              "ToolTip": "C:\\Users\\iRewiewer\\Documents\\Github Tmp\\SimpleCardCreator\\v1\\MainApp.cs [Design]",
+              "RelativeToolTip": "MainApp.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-18T10:46:31.695Z",
+              "EditorCaption": " [Design]"
+            }
+          ]
+        },
+        {
+          "DockedWidth": 341,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
