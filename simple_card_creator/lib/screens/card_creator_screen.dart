@@ -74,16 +74,17 @@ class _CardCreatorScreenState extends State<CardCreatorScreen> {
                       controller: screenshotController,
                       child: CardImageDisplay(
                         mainImage: mainImage,
-                        overlayImage: overlayImage,
+                        overlayImage: overlayImage, // Provide overlay image
+                        attackValue: attackController.text,
                         cardName: nameController.text,
-                        cardType: typeController.text,
+                        unitType: typeController.text,
                         cardDescription: descriptionController.text,
-                        cardAttack: attackController.text,
-                        cardDefense: defenseController.text,
-                        imageWidth: previewWidth, // Dynamic preview width
-                        imageHeight: previewHeight, // Dynamic preview height
+                        footerText: "© 2024 | RISE OF THE RONIN SET 1",
+                        imageWidth: previewWidth,
+                        imageHeight: previewHeight,
                       ),
                     ),
+
                     const SizedBox(height: 10),
                     // Checkbox for "Use image's size?"
                     Row(
