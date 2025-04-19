@@ -21,6 +21,7 @@ const SingleCardCreator: React.FC = () => {
         type: 'Unit',
         ATK: 0,
         HP: 0,
+        series: '',
         nameFontUrl: '',
         descriptionFontUrl: '',
         atkFontUrl: '',

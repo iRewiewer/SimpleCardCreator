@@ -9,6 +9,7 @@ export interface Card {
     type: 'Unit' | 'Spell' | 'Sabotage' | 'Raid Boss';
     ATK?: number;
     HP?: number;
+    series: string;
 
     // Optional font URLs
     nameFontUrl?: string;
