@@ -303,11 +303,13 @@ const BatchCardCreator: React.FC = () => {
             {uploadedFiles.length > 0 && (
                 <div className="uploaded-files">
                     <h4>Uploaded Files</h4>
-                    <ul>
+                    <div className="uploaded-files-grid">
                         {uploadedFiles.map((file, idx) => (
-                            <li key={idx}>{file.name}</li>
+                            <div key={idx} className="uploaded-file-item">
+                                {file.name}
+                            </div>
                         ))}
-                    </ul>
+                    </div>
                 </div>
             )}
 
