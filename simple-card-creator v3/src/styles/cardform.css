@@ -1,0 +1,29 @@
+.card-form {
+    width: 100%;
+}
+
+.card-form__group {
+    margin-bottom: 1rem;
+}
+
+.card-form__group label {
+    display: block;
+    margin-top: 0.3rem;
+    font-weight: bold;
+}
+
+.card-form__group input[type="text"],
+.card-form__group textarea {
+    display: block;
+    width: 100%;
+    padding: 0.5rem;
+    margin-top: 0.3rem;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-sizing: border-box;
+}
+
+.card-form__group input[type="file"] {
+    display: block;
+    margin-top: 0.3rem;
+}

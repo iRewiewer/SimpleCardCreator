@@ -1,0 +1,99 @@
+.card-preview {
+    position: relative;
+    width: 300px;
+    height: 450px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+/* Background image fills the container */
+.card-preview__background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Overlay image on top of the background */
+.card-preview__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Faction icon */
+.card-preview__faction {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 40px;
+}
+
+/* Type icon */
+.card-preview__type {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+}
+
+/* Attribute icon */
+.card-preview__attribute {
+    position: absolute;
+    top: 60px;
+    left: 10px;
+    width: 40px;
+}
+
+/* Name displayed at the top center */
+.card-preview__name {
+    position: absolute;
+    top: 10px;
+    left: 60px;
+    right: 60px;
+    text-align: center;
+    font-weight: bold;
+    color: #000;
+    /* Optionally add dynamic font-family based on user input */
+}
+
+/* ATK stat at the bottom left */
+.card-preview__atk {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    width: 50px;
+    text-align: center;
+    font-weight: bold;
+    color: #000;
+}
+
+/* HP stat at the bottom right */
+.card-preview__hp {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 50px;
+    text-align: center;
+    font-weight: bold;
+    color: #000;
+}
+
+/* Description area */
+.card-preview__description {
+    position: absolute;
+    top: 120px;
+    left: 10px;
+    right: 10px;
+    bottom: 60px;
+    overflow-y: auto;
+    text-align: center;
+    color: #000;
+}
