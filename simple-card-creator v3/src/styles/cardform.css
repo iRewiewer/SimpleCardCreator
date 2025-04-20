@@ -1,3 +1,5 @@
+/* src/styles/cardform.css */
+
 .card-form {
     width: 100%;
     color: var(--fg);
@@ -14,15 +16,17 @@
 
 /* each label+input pair */
 .card-form__group {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    margin-left: -7em;
+    margin-right: 3em;
 }
 
-/* make every label the same width, right‑aligned, and theme‑aware */
 .card-form__group label {
     flex: 0 0 10em;
-    /* adjust to fit your longest label */
+    margin-right: 0.5rem;
     text-align: right;
     font-weight: bold;
     white-space: nowrap;
@@ -31,10 +35,10 @@
 }
 
 /* inputs grow to fill remaining space, with theme‑aware borders */
-.card-form__group input[type="text"],
-.card-form__group input[type="number"],
+.card-form__group input,
 .card-form__group textarea {
     flex: 1;
+    min-width: 0;
     padding: 0.5rem;
     border: 1px solid var(--border, #ccc);
     border-radius: 3px;
@@ -42,6 +46,42 @@
     transition: border-color 300ms ease;
     color: var(--fg);
     background-color: var(--bg);
+    margin-right: 3rem;
+    /* make room for the ⚙️ button */
+}
+
+/* position and style the configuration button */
+.card-form__cfg-btn {
+    position: absolute;
+    top: 50%;
+    right: 0.5rem;
+    transform: translateY(-50%);
+    z-index: 1;
+    background-color: rgba(229, 229, 229, 1);
+    border-radius: 3px;
+    padding: 0.25rem;
+    color: #000000d5;
+    border: none;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+}
+
+.card-form__cfg-btn:hover {
+    background-color: rgba(229, 229, 229, 0.5);
+}
+
+/* divider + files heading */
+.card-form__divider {
+    margin: 2.5rem 0 2rem;
+    border: none;
+    border-top: 1px solid var(--border, #ccc);
+}
+
+.card-form__files-title {
+    margin: 0 0 -0.5rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--fg);
 }
 
 /* file uploads in their own 3‑column grid */
@@ -52,6 +92,13 @@
     gap: 1rem;
 }
 
+/* each file‑upload group */
+.card-form__upload-group {
+    position: relative;
+    /* enable absolute positioning of its ⚙️ */
+}
+
+/* file upload label & input */
 .card-form__upload-group label,
 .card-form__upload-group input[type="file"] {
     display: block;
@@ -61,6 +108,38 @@
     transition: color 300ms ease;
 }
 
+/* ensure file input leaves room for its ⚙️ */
+.card-form__upload-group input[type="file"] {
+    padding: 0.5rem;
+    padding-right: 2.5rem;
+    box-sizing: border-box;
+    border: 1px solid var(--border, #ccc);
+    border-radius: 3px;
+    background-color: var(--bg);
+    color: var(--fg);
+}
+
+/* position the file‑upload ⚙️ button */
+.card-form__upload-group .card-form__cfg-btn {
+    position: absolute;
+    top: 50px;
+    right: 5px;
+    transform: translateY(-50%);
+    background-color: rgba(229, 229, 229, 1);
+    border-radius: 3px;
+    padding: 0.25rem;
+    color: #000000d5;
+    border: none;
+    cursor: pointer;
+    z-index: 1;
+    transition: background-color 150ms ease;
+}
+
+.card-form__upload-group .card-form__cfg-btn:hover {
+    background-color: rgba(229, 229, 229, 0.5);
+}
+
+/* previews */
 .card-form__image-preview {
     margin-top: 0.5rem;
     max-width: 100%;

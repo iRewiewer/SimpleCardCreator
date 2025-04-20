@@ -7,6 +7,22 @@
     transition: background-color 300ms ease, color 300ms ease;
 }
 
+.top-actions {
+    margin-right: -14rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.clear-btn {
+    background: #dc3545 !important;
+    color: #fff;
+}
+
+.clear-btn:hover {
+    background: #b02a37 !important;
+}
+
+
 /* Layout: preview takes 1/3, properties 2/3 */
 .creator-layout {
     display: flex;
@@ -25,6 +41,10 @@
     margin-bottom: 1rem;
     font-size: 1.25rem;
     text-align: center;
+}
+
+.generate-btn {
+    margin-top: 1rem;
 }
 
 /* Properties column */

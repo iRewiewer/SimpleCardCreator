@@ -1,16 +1,35 @@
+// src/components/CardForm.tsx
+
 import React, { ChangeEvent } from 'react';
 import { FiSettings } from 'react-icons/fi';
 import { Card } from '../types';
 import '../styles/cardform.css';
 
+/** Text‐only fields you can lay out */
+export type FieldKey =
+    | 'name'
+    | 'description'
+    | 'ATK'
+    | 'HP'
+    | 'faction'
+    | 'attribute'
+    | 'type'
+    | 'series';
+
+/** File inputs you can lay out */
+export type FileFieldKey =
+    | 'faction'
+    | 'type'
+    | 'attribute'
+    | 'card'
+    | 'overlay';
+
 interface CardFormProps {
     card: Card;
     onChange: (updated: Card) => void;
     onConfigureTemplate: (field: FieldKey) => void;
+    onConfigureFileLayout?: (field: FileFieldKey) => void;
 }
-
-// must match FieldKey in the page
-type FieldKey = 'name' | 'description' | 'ATK' | 'HP' | 'faction' | 'attribute' | 'type' | 'series';
 
 const TEXT_FIELDS: FieldKey[] = [
     'name',
@@ -20,11 +39,23 @@ const TEXT_FIELDS: FieldKey[] = [
     'faction',
     'attribute',
     'type',
-    'series'
+    'series',
 ];
 
-const CardForm: React.FC<CardFormProps> = ({ card, onChange, onConfigureTemplate }) => {
-    const handleTextChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+const displayLabel = (field: string) =>
+    field === 'ATK' || field === 'HP'
+        ? field
+        : field.charAt(0).toUpperCase() + field.slice(1);
+
+const CardForm: React.FC<CardFormProps> = ({
+    card,
+    onChange,
+    onConfigureTemplate,
+    onConfigureFileLayout,
+}) => {
+    const handleTextChange = (
+        e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => {
         const { name, value } = e.target;
         let val: string | number = value;
         if (name === 'ATK' || name === 'HP') {
@@ -35,13 +66,13 @@ const CardForm: React.FC<CardFormProps> = ({ card, onChange, onConfigureTemplate
     };
 
     const handleFile = (e: ChangeEvent<HTMLInputElement>, field: keyof Card) => {
-        if (!e.target.files?.[0]) return;
-        const f = e.target.files[0];
+        const file = e.target.files?.[0];
+        if (!file) return;
         const reader = new FileReader();
         reader.onload = ev => {
             onChange({ ...card, [field]: ev.target?.result as string } as Card);
         };
-        reader.readAsDataURL(f);
+        reader.readAsDataURL(file);
     };
 
     return (
@@ -49,7 +80,7 @@ const CardForm: React.FC<CardFormProps> = ({ card, onChange, onConfigureTemplate
             <div className="card-form__fields">
                 {TEXT_FIELDS.map(field => (
                     <div key={field} className="card-form__group">
-                        <label htmlFor={field}>{field}:</label>
+                        <label htmlFor={field}>{displayLabel(field)}</label>
                         {field === 'description' ? (
                             <textarea
                                 id={field}
@@ -78,12 +109,16 @@ const CardForm: React.FC<CardFormProps> = ({ card, onChange, onConfigureTemplate
                 ))}
             </div>
 
+            <hr className="card-form__divider" />
+            <h4 className="card-form__files-title">Files</h4>
+
             <div className="card-form__uploads">
-                {/* your existing 3‑column upload groups */}
-                {/* e.g.: */}
                 <div className="card-form__upload-group">
-                    <label>Faction Image:</label>
-                    <input type="file" onChange={e => handleFile(e, 'factionImageUrl')} />
+                    <label>Faction Image</label>
+                    <input
+                        type="file"
+                        onChange={e => handleFile(e, 'factionImageUrl')}
+                    />
                     {card.factionImageUrl && (
                         <img
                             src={card.factionImageUrl}
@@ -91,8 +126,117 @@ const CardForm: React.FC<CardFormProps> = ({ card, onChange, onConfigureTemplate
                             className="card-form__image-preview"
                         />
                     )}
+                    {onConfigureFileLayout && (
+                        <button
+                            type="button"
+                            className="card-form__cfg-btn"
+                            onClick={() => onConfigureFileLayout('faction')}
+                            title="Configure layout"
+                        >
+                            <FiSettings />
+                        </button>
+                    )}
                 </div>
-                {/* ...etc... */}
+
+                <div className="card-form__upload-group">
+                    <label>Type Image</label>
+                    <input
+                        type="file"
+                        onChange={e => handleFile(e, 'typeImageUrl')}
+                    />
+                    {card.typeImageUrl && (
+                        <img
+                            src={card.typeImageUrl}
+                            alt="Type preview"
+                            className="card-form__image-preview"
+                        />
+                    )}
+                    {onConfigureFileLayout && (
+                        <button
+                            type="button"
+                            className="card-form__cfg-btn"
+                            onClick={() => onConfigureFileLayout('type')}
+                            title="Configure layout"
+                        >
+                            <FiSettings />
+                        </button>
+                    )}
+                </div>
+
+                <div className="card-form__upload-group">
+                    <label>Attribute Image</label>
+                    <input
+                        type="file"
+                        onChange={e => handleFile(e, 'attributeImageUrl')}
+                    />
+                    {card.attributeImageUrl && (
+                        <img
+                            src={card.attributeImageUrl}
+                            alt="Attribute preview"
+                            className="card-form__image-preview"
+                        />
+                    )}
+                    {onConfigureFileLayout && (
+                        <button
+                            type="button"
+                            className="card-form__cfg-btn"
+                            onClick={() => onConfigureFileLayout('attribute')}
+                            title="Configure layout"
+                        >
+                            <FiSettings />
+                        </button>
+                    )}
+                </div>
+
+                <div className="card-form__upload-group">
+                    <label>Card Image</label>
+                    <input
+                        type="file"
+                        onChange={e => handleFile(e, 'cardImageUrl')}
+                    />
+                    {card.cardImageUrl && (
+                        <img
+                            src={card.cardImageUrl}
+                            alt="Card preview"
+                            className="card-form__image-preview"
+                        />
+                    )}
+                    {onConfigureFileLayout && (
+                        <button
+                            type="button"
+                            className="card-form__cfg-btn"
+                            onClick={() => onConfigureFileLayout('card')}
+                            title="Configure layout"
+                        >
+                            <FiSettings />
+                        </button>
+                    )}
+                </div>
+
+                <div className="card-form__upload-group">
+                    <label>Card Overlay</label>
+                    <input
+                        type="file"
+                        onChange={e => handleFile(e, 'overlayImageUrl')}
+                    />
+                    {card.overlayImageUrl && (
+                        <img
+                            src={card.overlayImageUrl}
+                            alt="Overlay preview"
+                            className="card-form__image-preview"
+                        />
+                    )}
+                    {onConfigureFileLayout && (
+                        <button
+                            type="button"
+                            className="card-form__cfg-btn"
+                            onClick={() => onConfigureFileLayout('overlay')}
+                            title="Configure layout"
+                        >
+                            <FiSettings />
+                        </button>
+                    )}
+                </div>
             </div>
         </form>
     );

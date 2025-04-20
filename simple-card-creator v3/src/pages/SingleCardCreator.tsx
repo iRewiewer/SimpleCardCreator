@@ -1,92 +1,229 @@
-import React, { useState } from 'react';
-import CardForm from '../components/CardForm';
+// src/pages/SingleCardCreator.tsx
+
+import React, { useState, useRef, useEffect } from 'react';
 import CardPreview from '../components/CardPreview';
+import CardPropertiesPanel, {
+    FieldKey,
+    FileFieldKey,
+} from '../components/CardPropertiesPanel';
 import Modal from '../components/Modal';
 import TextRegionEditor from '../components/TextRegionEditor';
-import { Card } from '../types';
-import { TextRegion, cardTemplates, CardTemplate } from '../config/cardTemplates';
+import FileRegionEditor from '../components/FileRegionEditor';
+import { Card, TextRegion, CardTemplate } from '../types';
+import { cardTemplates } from '../types/cardTemplates';
+import html2canvas from 'html2canvas';
+import { saveAs } from 'file-saver';
 import '../styles/single-card-creator.css';
 
-// The form uses these exact Card keys:
-type FieldKey = 'name' | 'description' | 'ATK' | 'HP' | 'faction' | 'attribute' | 'type' | 'series';
-// Template keys are lowercase:
 type TemplateKey = keyof CardTemplate;
 
+// key for localStorage
+const STORAGE_KEY = 'singleCardCreatorData';
+
+// default empty card
+const initialCard: Card = {
+    id: 0,
+    name: '',
+    description: '',
+    artworkName: '',
+    overlay: '',
+    faction: '',
+    attribute: '',
+    type: '',
+    ATK: 0,
+    HP: 0,
+    series: '',
+    nameFontUrl: '',
+    descriptionFontUrl: '',
+    atkFontUrl: '',
+    hpFontUrl: '',
+    factionImageUrl: '',
+    typeImageUrl: '',
+    attributeImageUrl: '',
+    cardImageUrl: '',
+    overlayImageUrl: '',
+};
+
+// default region for image editors
+const DEFAULT_IMAGE_REGION: TextRegion = {
+    x: 0,
+    y: 0,
+    maxWidth: 100,
+    maxHeight: 100,
+};
+
 const SingleCardCreator: React.FC = () => {
-    const [card, setCard] = useState<Card>({
-        id: 0,
-        name: '',
-        description: '',
-        artworkName: '',
-        overlay: '',
-        faction: '',
-        attribute: '',
-        type: 'Unit',
-        ATK: 0,
-        HP: 0,
-        series: '',
-        nameFontUrl: '',
-        descriptionFontUrl: '',
-        atkFontUrl: '',
-        hpFontUrl: '',
-        factionImageUrl: '',
-        typeImageUrl: '',
-        attributeImageUrl: '',
-        cardImageUrl: '',
-        overlayImageUrl: '',
-    });
-
-    // overrides stored by the lowercase TemplateKey
+    // --- State hooks ---
+    const [card, setCard] = useState<Card>(initialCard);
     const [overrides, setOverrides] = useState<Partial<Record<TemplateKey, TextRegion>>>({});
-    // which Card-field is being edited
+    const [imageOverrides, setImageOverrides] = useState<Partial<Record<FileFieldKey, TextRegion>>>({});
+    const [didLoad, setDidLoad] = useState(false);
+
+    // editor state
     const [editingField, setEditingField] = useState<FieldKey | null>(null);
+    const [savedRegion, setSavedRegion] = useState<TextRegion | undefined>(undefined);
+    const [editingImageField, setEditingImageField] = useState<FileFieldKey | null>(null);
+    const [savedImageRegion, setSavedImageRegion] = useState<TextRegion | undefined>(undefined);
 
-    const openEditor = (field: FieldKey) => setEditingField(field);
-    const closeEditor = () => setEditingField(null);
+    // load from localStorage on mount
+    useEffect(() => {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            try {
+                const { card, overrides, imageOverrides } = JSON.parse(stored);
+                setCard(card);
+                setOverrides(overrides);
+                setImageOverrides(imageOverrides);
+            } catch {
+                // ignore parse errors
+            }
+        }
+        setDidLoad(true);
+    }, []);
 
-    const saveTemplate = (region: TextRegion) => {
-        if (!editingField) return;
-        const key = editingField.toLowerCase() as TemplateKey;
-        setOverrides(o => ({ ...o, [key]: region }));
-        closeEditor();
+    // save to localStorage whenever relevant state changes (after load)
+    useEffect(() => {
+        if (!didLoad) return;
+        const payload = { card, overrides, imageOverrides };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    }, [didLoad, card, overrides, imageOverrides]);
+
+    // --- Text editor handlers ---
+    const openTextEditor = (field: FieldKey) => {
+        setEditingField(field);
+        const key = field.toLowerCase() as TemplateKey;
+        setSavedRegion(overrides[key]);
+    };
+    const cancelTextTemplate = () => {
+        if (editingField) {
+            const key = editingField.toLowerCase() as TemplateKey;
+            setOverrides(o => {
+                const copy = { ...o };
+                if (savedRegion !== undefined) copy[key] = savedRegion;
+                else delete copy[key];
+                return copy;
+            });
+        }
+        setEditingField(null);
+        setSavedRegion(undefined);
+    };
+    const saveTextTemplate = (region: TextRegion) => {
+        if (editingField) {
+            const key = editingField.toLowerCase() as TemplateKey;
+            setOverrides(o => ({ ...o, [key]: region }));
+        }
+        setEditingField(null);
+        setSavedRegion(undefined);
     };
 
-    const initialRegion = (field: FieldKey): TextRegion => {
+    // --- File editor handlers ---
+    const openFileEditor = (field: FileFieldKey) => {
+        setEditingImageField(field);
+        setSavedImageRegion(imageOverrides[field]);
+    };
+    const cancelFileTemplate = () => {
+        if (editingImageField) {
+            setImageOverrides(o => {
+                const copy = { ...o };
+                if (savedImageRegion !== undefined) copy[editingImageField] = savedImageRegion;
+                else delete copy[editingImageField];
+                return copy;
+            });
+        }
+        setEditingImageField(null);
+        setSavedImageRegion(undefined);
+    };
+    const saveFileTemplate = (region: TextRegion) => {
+        if (editingImageField) {
+            setImageOverrides(o => ({ ...o, [editingImageField]: region }));
+        }
+        setEditingImageField(null);
+        setSavedImageRegion(undefined);
+    };
+
+    // --- Helpers for initial regions ---
+    const initialTextRegion = (field: FieldKey): TextRegion => {
         const key = field.toLowerCase() as TemplateKey;
-        return (
-            overrides[key] ??
-            cardTemplates[card.type]?.[key] ??
-            cardTemplates.default[key]!
-        );
+        return overrides[key] ?? cardTemplates.default[key]!;
+    };
+    const initialImageRegion = (field: FileFieldKey): TextRegion =>
+        imageOverrides[field] ?? DEFAULT_IMAGE_REGION;
+
+    // --- Generate PNG ---
+    const previewRef = useRef<HTMLDivElement>(null);
+    const generatePng = async () => {
+        if (!previewRef.current) return;
+        const canvas = await html2canvas(previewRef.current);
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        const cardname = `${card.name || 'card'}-${timestamp}.png`;
+        canvas.toBlob(blob => {
+            if (blob) saveAs(blob, cardname);
+        });
+    };
+
+    // --- Clear All: reset state & storage ---
+    const clearAll = () => {
+        setCard(initialCard);
+        setOverrides({});
+        setImageOverrides({});
+        localStorage.removeItem(STORAGE_KEY);
     };
 
     return (
         <div className="single-container">
+            {/* top‑right Clear All */}
+            <div className="top-actions">
+                <button className="btn clear-btn" onClick={clearAll}>
+                    Clear All Fields
+                </button>
+            </div>
+            <h2>Card Creator</h2>
             <div className="creator-layout">
                 <div className="preview-container">
-                    <h3>Card Preview</h3>
-                    <CardPreview
-                        card={card}
-                        templateOverrides={overrides}
-                    />
+                    <div ref={previewRef}>
+                        <CardPreview
+                            card={card}
+                            templateOverrides={overrides}
+                            imageOverrides={imageOverrides}
+                        />
+                    </div>
+                    <button className="btn generate-btn" onClick={generatePng}>
+                        Generate PNG
+                    </button>
                 </div>
                 <div className="properties-container">
-                    <h3>Properties</h3>
-                    <CardForm
+                    <CardPropertiesPanel
                         card={card}
                         onChange={setCard}
-                        onConfigureTemplate={openEditor}
+                        onConfigureTemplate={openTextEditor}
+                        onConfigureFileLayout={openFileEditor}
                     />
                 </div>
             </div>
-
             {editingField && (
-                <Modal onClose={closeEditor}>
+                <Modal onClose={cancelTextTemplate}>
                     <TextRegionEditor
                         field={editingField}
-                        initial={initialRegion(editingField)}
-                        onSave={saveTemplate}
-                        onCancel={closeEditor}
+                        initial={initialTextRegion(editingField)}
+                        onPreviewChange={region => {
+                            const key = editingField.toLowerCase() as TemplateKey;
+                            setOverrides(o => ({ ...o, [key]: region }));
+                        }}
+                        onSave={saveTextTemplate}
+                        onCancel={cancelTextTemplate}
+                    />
+                </Modal>
+            )}
+            {editingImageField && (
+                <Modal onClose={cancelFileTemplate}>
+                    <FileRegionEditor
+                        field={editingImageField}
+                        initial={initialImageRegion(editingImageField)}
+                        onPreviewChange={region => {
+                            setImageOverrides(o => ({ ...o, [editingImageField!]: region }));
+                        }}
+                        onSave={saveFileTemplate}
+                        onCancel={cancelFileTemplate}
                     />
                 </Modal>
             )}

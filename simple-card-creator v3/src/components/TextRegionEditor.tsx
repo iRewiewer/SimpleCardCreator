@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { TextRegion, TextDecoration, TextAlign } from '../config/cardTemplates';
+// src/components/TextRegionEditor.tsx
+
+import React, { useState, ChangeEvent } from 'react';
+import { TextRegion, TextDecoration, TextAlign } from '../types';
 import '../styles/text-region-editor.css';
 
 interface TextRegionEditorProps {
@@ -7,84 +9,72 @@ interface TextRegionEditorProps {
     initial: TextRegion;
     onSave: (region: TextRegion) => void;
     onCancel: () => void;
+    onPreviewChange?: (region: TextRegion) => void;
 }
+
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const TextRegionEditor: React.FC<TextRegionEditorProps> = ({
     field,
     initial,
     onSave,
-    onCancel
+    onCancel,
+    onPreviewChange
 }) => {
     const [region, setRegion] = useState<TextRegion>(initial);
 
     const update = <K extends keyof TextRegion>(key: K, value: TextRegion[K]) => {
-        setRegion(r => ({ ...r, [key]: value }));
+        const next = { ...region, [key]: value };
+        setRegion(next);
+        onPreviewChange?.(next);
     };
 
     const toggleDecoration = (dec: TextDecoration) => {
         const decos = region.textDecoration ?? [];
-        const has = decos.includes(dec);
-        const next = has ? decos.filter(d => d !== dec) : [...decos, dec];
+        const next = decos.includes(dec)
+            ? decos.filter(d => d !== dec)
+            : [...decos, dec];
         update('textDecoration', next);
     };
 
     return (
         <div className="editor-overlay">
             <div className="editor-panel">
-                <h2>Configure “{field}”</h2>
+                <h2>Configure “{capitalize(field)}”</h2>
 
-                <div className="editor-row">
-                    <label>X:</label>
-                    <input
-                        type="number"
-                        value={region.x}
-                        onChange={e => update('x', +e.target.value)}
-                    />
-                </div>
-                <div className="editor-row">
-                    <label>Y:</label>
-                    <input
-                        type="number"
-                        value={region.y}
-                        onChange={e => update('y', +e.target.value)}
-                    />
-                </div>
-                <div className="editor-row">
-                    <label>Max Width:</label>
-                    <input
-                        type="number"
-                        value={region.maxWidth}
-                        onChange={e => update('maxWidth', +e.target.value)}
-                    />
-                </div>
-                <div className="editor-row">
-                    <label>Max Height:</label>
-                    <input
-                        type="number"
-                        value={region.maxHeight}
-                        onChange={e => update('maxHeight', +e.target.value)}
-                    />
-                </div>
+                {(['x', 'y', 'maxWidth', 'maxHeight'] as (keyof TextRegion)[]).map(k => (
+                    <div key={k} className="editor-row">
+                        <label>{capitalize(k)}:</label>
+                        <input
+                            type="number"
+                            value={region[k] as number}
+                            onChange={e => update(k, +e.target.value as any)}
+                        />
+                    </div>
+                ))}
 
-                <div className="editor-row">
+                {/* NEW: custom file‑input wrapper */}
+                <div className="editor-row file-row">
                     <label>Font File:</label>
-                    <input
-                        type="file"
-                        accept=".ttf,.otf,.woff,.woff2"
-                        onChange={e => {
-                            const f = e.target.files?.[0];
-                            if (!f) return;
-                            const reader = new FileReader();
-                            reader.onload = ev => {
-                                update('fontSize', region.fontSize); // keep fontSize
-                                update('color', region.color ?? '#000000'); // keep color
-                                // store file URL in fontUrl field
-                                // Note: if your TextRegion has a fontUrl key
-                                // use update('fontUrl', ev.target?.result as string)
-                            };
-                            reader.readAsDataURL(f);
-                        }}
-                    />
+                    <div className="file-input-wrapper">
+                        <input
+                            type="file"
+                            accept=".ttf,.otf,.woff,.woff2"
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                const f = e.target.files?.[0];
+                                if (!f) return;
+                                const reader = new FileReader();
+                                reader.onload = ev => {
+                                    update('fontUrl', ev.target?.result as string);
+                                    update('fontName', f.name);
+                                };
+                                reader.readAsDataURL(f);
+                            }}
+                        />
+                        <span className="file-name">
+                            {region.fontName || 'No font chosen'}
+                        </span>
+                    </div>
                 </div>
 
                 <div className="editor-row">
@@ -114,7 +104,7 @@ const TextRegionEditor: React.FC<TextRegionEditorProps> = ({
                                 checked={(region.textDecoration ?? []).includes(dec)}
                                 onChange={() => toggleDecoration(dec)}
                             />
-                            {dec}
+                            {capitalize(dec.toLowerCase())}
                         </label>
                     ))}
                 </fieldset>
@@ -126,7 +116,9 @@ const TextRegionEditor: React.FC<TextRegionEditorProps> = ({
                         onChange={e => update('textAlign', e.target.value as TextAlign)}
                     >
                         {Object.values(TextAlign).map(a => (
-                            <option key={a} value={a}>{a}</option>
+                            <option key={a} value={a}>
+                                {capitalize(a)}
+                            </option>
                         ))}
                     </select>
                 </div>
