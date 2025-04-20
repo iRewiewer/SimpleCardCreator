@@ -1,7 +1,4 @@
-// src/pages/BatchCardCreator.tsx
-
 import React, { useRef, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { Card } from '../types';
@@ -14,21 +11,19 @@ import {
 import '../styles/batch-card-creator.css';
 
 const BatchCardCreator: React.FC = () => {
-    const { projectId } = useParams<{ projectId: string }>();
-    const navigate = useNavigate();
-
     const [cards, setCards] = useState<Card[]>([]);
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
     const [error, setError] = useState<string>('');
     const jsonInputRef = useRef<HTMLInputElement | null>(null);
     const filesInputRef = useRef<HTMLInputElement | null>(null);
 
-    const switchToSingleMode = () => {
-        if (projectId) navigate(`/project/${projectId}/single`);
+    const handleJsonButtonClick = () => {
+        jsonInputRef.current?.click();
     };
 
-    const handleJsonButtonClick = () => jsonInputRef.current?.click();
-    const handleFilesButtonClick = () => filesInputRef.current?.click();
+    const handleFilesButtonClick = () => {
+        filesInputRef.current?.click();
+    };
 
     const handleJsonUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -81,7 +76,7 @@ const BatchCardCreator: React.FC = () => {
     const fileToDataUrl = (file: File): Promise<string> =>
         new Promise(res => {
             const reader = new FileReader();
-            reader.onload = e => res(e.target?.result as string);
+            reader.onload = () => res(reader.result as string);
             reader.readAsDataURL(file);
         });
 
@@ -109,7 +104,7 @@ const BatchCardCreator: React.FC = () => {
             decos.includes(TextDecoration.Bold) ? 'bold' : ''
         ].filter(s => s).join(' ');
 
-        // shrink until it fits
+        // shrink until it fits both width and height
         while (fontSize > 0) {
             ctx.font = `${stylePrefix} ${fontSize}px sans-serif`;
             const fitsWidth = lines.every(l => ctx.measureText(l).width <= region.maxWidth);
@@ -123,20 +118,23 @@ const BatchCardCreator: React.FC = () => {
         lines.forEach((line, i) => {
             const y = region.y + i * fontSize;
 
-            if (region.textAlign === TextAlign.Justify && line.includes(' ') && i < lines.length - 1) {
-                // justify this line (not last)
+            if (
+                region.textAlign === TextAlign.Justify &&
+                line.includes(' ') &&
+                i < lines.length - 1
+            ) {
+                // justify (not last line)
                 const words = line.split(' ');
                 const measured = ctx.measureText(line).width;
                 const extraSpace = (region.maxWidth - measured) / (words.length - 1);
                 let x = region.x;
                 ctx.textAlign = 'left';
-                words.forEach((w, idx) => {
+                words.forEach(w => {
                     ctx.fillText(w, x, y);
-                    const wWidth = ctx.measureText(w).width;
-                    x += wWidth + extraSpace;
+                    x += ctx.measureText(w).width + extraSpace;
                 });
             } else {
-                // normal align
+                // left/center/right
                 let x: number;
                 switch (region.textAlign) {
                     case TextAlign.Center:
@@ -155,11 +153,25 @@ const BatchCardCreator: React.FC = () => {
 
                 // underline if requested
                 if (decos.includes(TextDecoration.Underlined)) {
-                    const lineWidth = ctx.measureText(line).width;
-                    const underlineY = y + fontSize;
+                    const w = ctx.measureText(line).width;
+                    const uy = y + fontSize;
                     ctx.beginPath();
-                    ctx.moveTo(x - (ctx.textAlign === 'center' ? lineWidth / 2 : ctx.textAlign === 'right' ? lineWidth : 0), underlineY);
-                    ctx.lineTo(x + (ctx.textAlign === 'center' ? lineWidth / 2 : ctx.textAlign === 'right' ? 0 : lineWidth), underlineY);
+                    ctx.moveTo(
+                        x -
+                        (ctx.textAlign === 'center'
+                            ? w / 2
+                            : ctx.textAlign === 'right'
+                                ? w
+                                : 0),
+                        uy
+                    );
+                    ctx.lineTo(
+                        x +
+                        (ctx.textAlign === 'center'
+                            ? w / 2
+                            : 0),
+                        uy
+                    );
                     ctx.lineWidth = Math.max(1, fontSize * 0.05);
                     ctx.strokeStyle = region.color ?? '#000';
                     ctx.stroke();
@@ -169,7 +181,7 @@ const BatchCardCreator: React.FC = () => {
     };
 
     const buildCards = async () => {
-        if (!cards.length) return;
+        if (cards.length === 0) return;
         const zip = new JSZip();
         const folder = zip.folder('cards')!;
         const canvas = document.createElement('canvas');
@@ -182,7 +194,7 @@ const BatchCardCreator: React.FC = () => {
                 continue;
             }
 
-            // draw artwork
+            // draw base artwork
             const artDataUrl = await fileToDataUrl(artFile);
             const artImg = await loadImage(artDataUrl);
             canvas.width = artImg.width;
@@ -190,7 +202,7 @@ const BatchCardCreator: React.FC = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(artImg, 0, 0);
 
-            // draw overlay if present
+            // draw overlay
             if (card.overlay) {
                 const ovFile = uploadedFiles.find(f => f.name === card.overlay);
                 if (ovFile) {
@@ -200,18 +212,18 @@ const BatchCardCreator: React.FC = () => {
                 }
             }
 
-            // draw text regions per template
+            // draw text regions
             const tmpl = cardTemplates[card.type] || cardTemplates.default;
-            if (tmpl.name) drawTextToFit(ctx, card.name, tmpl.name);
-            if (tmpl.description) drawTextToFit(ctx, card.description, tmpl.description);
-            if (tmpl.atk) drawTextToFit(ctx, String(card.ATK), tmpl.atk);
-            if (tmpl.hp) drawTextToFit(ctx, String(card.HP), tmpl.hp);
-            if (tmpl.faction) drawTextToFit(ctx, card.faction, tmpl.faction);
-            if (tmpl.attribute) drawTextToFit(ctx, card.attribute, tmpl.attribute);
-            if (tmpl.type) drawTextToFit(ctx, card.type, tmpl.type);
-            if (tmpl.series) drawTextToFit(ctx, card.series, tmpl.series);
+            tmpl.name && drawTextToFit(ctx, card.name, tmpl.name);
+            tmpl.description && drawTextToFit(ctx, card.description, tmpl.description);
+            tmpl.atk && drawTextToFit(ctx, String(card.ATK), tmpl.atk);
+            tmpl.hp && drawTextToFit(ctx, String(card.HP), tmpl.hp);
+            tmpl.faction && drawTextToFit(ctx, card.faction, tmpl.faction);
+            tmpl.attribute && drawTextToFit(ctx, card.attribute, tmpl.attribute);
+            tmpl.type && drawTextToFit(ctx, card.type, tmpl.type);
+            tmpl.series && drawTextToFit(ctx, card.series, tmpl.series);
 
-            // export and add to zip
+            // export PNG
             const blob = await new Promise<Blob>(res =>
                 canvas.toBlob(b => res(b!), 'image/png')
             );
@@ -219,23 +231,12 @@ const BatchCardCreator: React.FC = () => {
             folder.file(filename, blob);
         }
 
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const content = await zip.generateAsync({ type: 'blob' });
-        saveAs(content, `project-${projectId}-at-${timestamp}-.zip`);
+        saveAs(content, 'cards.zip');
     };
 
     return (
         <div className="batch-container">
-            <h2>Batch Card Creator</h2>
-            <div className="mode-switch">
-                <button className="btn" onClick={switchToSingleMode}>
-                    Single Card Mode
-                </button>
-                <button className="btn">Batch Mode</button>
-            </div>
-
-            <p>Project ID: {projectId}</p>
-
             <div className="upload-controls">
                 <button className="btn" onClick={handleJsonButtonClick}>
                     Upload JSON

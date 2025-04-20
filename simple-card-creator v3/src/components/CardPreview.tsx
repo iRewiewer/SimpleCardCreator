@@ -1,12 +1,22 @@
+// src/components/CardPreview.tsx
+
 import React from 'react';
 import { Card } from '../types';
 import '../styles/cardpreview.css';
+import type { TextRegion } from '../config/cardTemplates';
 
-interface CardPreviewProps {
+export interface CardPreviewProps {
     card: Card;
+    /** Optional per‐field layout overrides */
+    templateOverrides?: Partial<Record<keyof Card, TextRegion>>;
 }
 
-const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
+const CardPreview: React.FC<CardPreviewProps> = ({
+    card,
+    templateOverrides = {},
+}) => {
+    // you can now read templateOverrides.name/description/etc.
+    // and apply them in your canvas/drawing logic if you want.
     return (
         <div className="card-preview">
             {card.cardImageUrl && (

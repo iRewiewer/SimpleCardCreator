@@ -24,10 +24,3 @@ export interface Card {
     cardImageUrl?: string;
     overlayImageUrl?: string;
 }
-
-export interface Project {
-    id: number;
-    name: string;
-    description: string;
-    card: Card;
-}

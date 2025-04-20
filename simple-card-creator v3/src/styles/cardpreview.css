@@ -2,10 +2,11 @@
     position: relative;
     width: 300px;
     height: 450px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border, #ccc);
     border-radius: 4px;
     overflow: hidden;
-    background-color: #fff;
+    background-color: var(--card-bg, #fff);
+    transition: background-color 300ms ease, border-color 300ms ease;
 }
 
 /* Background image fills the container */
@@ -60,8 +61,8 @@
     right: 60px;
     text-align: center;
     font-weight: bold;
-    color: #000;
-    /* Optionally add dynamic font-family based on user input */
+    color: var(--fg);
+    transition: color 300ms ease;
 }
 
 /* ATK stat at the bottom left */
@@ -72,7 +73,8 @@
     width: 50px;
     text-align: center;
     font-weight: bold;
-    color: #000;
+    color: var(--fg);
+    transition: color 300ms ease;
 }
 
 /* HP stat at the bottom right */
@@ -83,7 +85,8 @@
     width: 50px;
     text-align: center;
     font-weight: bold;
-    color: #000;
+    color: var(--fg);
+    transition: color 300ms ease;
 }
 
 /* Description area */
@@ -95,5 +98,6 @@
     bottom: 60px;
     overflow-y: auto;
     text-align: center;
-    color: #000;
+    color: var(--fg);
+    transition: color 300ms ease;
 }

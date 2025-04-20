@@ -1,15 +1,18 @@
-// src/pages/SingleCardCreator.tsx
-
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import CardForm from '../components/CardForm';
 import CardPreview from '../components/CardPreview';
-import { Card, Project } from '../types';
+import Modal from '../components/Modal';
+import TextRegionEditor from '../components/TextRegionEditor';
+import { Card } from '../types';
+import { TextRegion, cardTemplates, CardTemplate } from '../config/cardTemplates';
+import '../styles/single-card-creator.css';
+
+// The form uses these exact Card keys:
+type FieldKey = 'name' | 'description' | 'ATK' | 'HP' | 'faction' | 'attribute' | 'type' | 'series';
+// Template keys are lowercase:
+type TemplateKey = keyof CardTemplate;
 
 const SingleCardCreator: React.FC = () => {
-    const { projectId } = useParams<{ projectId: string }>();
-    const navigate = useNavigate();
-    const [project, setProject] = useState<Project | null>(null);
     const [card, setCard] = useState<Card>({
         id: 0,
         name: '',
@@ -33,50 +36,60 @@ const SingleCardCreator: React.FC = () => {
         overlayImageUrl: '',
     });
 
-    useEffect(() => {
-        if (!projectId) return;
-        const stored = localStorage.getItem('projects');
-        if (!stored) return;
-        const projects: Project[] = JSON.parse(stored);
-        const found = projects.find(p => p.id.toString() === projectId);
-        if (found) {
-            setProject(found);
-            if (found.card) setCard(found.card);
-        }
-    }, [projectId]);
+    // overrides stored by the lowercase TemplateKey
+    const [overrides, setOverrides] = useState<Partial<Record<TemplateKey, TextRegion>>>({});
+    // which Card-field is being edited
+    const [editingField, setEditingField] = useState<FieldKey | null>(null);
 
-    const updateCard = (updated: Card) => {
-        setCard(updated);
-        if (!project) return;
-        const stored = localStorage.getItem('projects');
-        if (!stored) return;
-        const projects: Project[] = JSON.parse(stored).map((p: { id: number; }) =>
-            p.id === project.id ? { ...p, card: updated } : p
+    const openEditor = (field: FieldKey) => setEditingField(field);
+    const closeEditor = () => setEditingField(null);
+
+    const saveTemplate = (region: TextRegion) => {
+        if (!editingField) return;
+        const key = editingField.toLowerCase() as TemplateKey;
+        setOverrides(o => ({ ...o, [key]: region }));
+        closeEditor();
+    };
+
+    const initialRegion = (field: FieldKey): TextRegion => {
+        const key = field.toLowerCase() as TemplateKey;
+        return (
+            overrides[key] ??
+            cardTemplates[card.type]?.[key] ??
+            cardTemplates.default[key]!
         );
-        localStorage.setItem('projects', JSON.stringify(projects));
     };
-
-    const switchToBatchMode = () => {
-        if (projectId) navigate(`/project/${projectId}/batch`);
-    };
-
-    if (!project) return <div>Loading project...</div>;
 
     return (
-        <div style={{ padding: '1rem' }}>
-            <h2>{project.name} - Card Creator</h2>
-            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-                <button style={{ padding: '0.5rem 1rem' }}>Single Card Mode</button>
-                <button style={{ padding: '0.5rem 1rem' }} onClick={switchToBatchMode}>Batch Mode</button>
-            </div>
-            <div style={{ display: 'flex', gap: '2rem' }}>
-                <div style={{ flex: '1 1 40%' }}>
-                    <CardPreview card={card} />
+        <div className="single-container">
+            <div className="creator-layout">
+                <div className="preview-container">
+                    <h3>Card Preview</h3>
+                    <CardPreview
+                        card={card}
+                        templateOverrides={overrides}
+                    />
                 </div>
-                <div style={{ flex: '1 1 60%' }}>
-                    <CardForm card={card} onChange={updateCard} />
+                <div className="properties-container">
+                    <h3>Properties</h3>
+                    <CardForm
+                        card={card}
+                        onChange={setCard}
+                        onConfigureTemplate={openEditor}
+                    />
                 </div>
             </div>
+
+            {editingField && (
+                <Modal onClose={closeEditor}>
+                    <TextRegionEditor
+                        field={editingField}
+                        initial={initialRegion(editingField)}
+                        onSave={saveTemplate}
+                        onCancel={closeEditor}
+                    />
+                </Modal>
+            )}
         </div>
     );
 };

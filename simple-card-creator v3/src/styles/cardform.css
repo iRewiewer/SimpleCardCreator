@@ -1,29 +1,71 @@
 .card-form {
     width: 100%;
+    color: var(--fg);
+    transition: color 300ms ease;
 }
 
+/* two‑column grid for field pairs */
+.card-form__fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 1.5rem;
+    row-gap: 1rem;
+}
+
+/* each label+input pair */
 .card-form__group {
-    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
+/* make every label the same width, right‑aligned, and theme‑aware */
 .card-form__group label {
-    display: block;
-    margin-top: 0.3rem;
+    flex: 0 0 10em;
+    /* adjust to fit your longest label */
+    text-align: right;
     font-weight: bold;
+    white-space: nowrap;
+    color: var(--fg);
+    transition: color 300ms ease;
 }
 
+/* inputs grow to fill remaining space, with theme‑aware borders */
 .card-form__group input[type="text"],
+.card-form__group input[type="number"],
 .card-form__group textarea {
-    display: block;
-    width: 100%;
+    flex: 1;
     padding: 0.5rem;
-    margin-top: 0.3rem;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border, #ccc);
     border-radius: 3px;
     box-sizing: border-box;
+    transition: border-color 300ms ease;
+    color: var(--fg);
+    background-color: var(--bg);
 }
 
-.card-form__group input[type="file"] {
+/* file uploads in their own 3‑column grid */
+.card-form__uploads {
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.card-form__upload-group label,
+.card-form__upload-group input[type="file"] {
     display: block;
+    width: 100%;
     margin-top: 0.3rem;
+    color: var(--fg);
+    transition: color 300ms ease;
+}
+
+.card-form__image-preview {
+    margin-top: 0.5rem;
+    max-width: 100%;
+    display: block;
+    border: 1px solid var(--border, #ccc);
+    border-radius: 3px;
+    transition: border-color 300ms ease;
 }

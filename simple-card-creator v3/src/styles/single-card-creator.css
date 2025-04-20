@@ -1,0 +1,53 @@
+.single-container {
+    padding: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: var(--bg);
+    color: var(--fg);
+    transition: background-color 300ms ease, color 300ms ease;
+}
+
+/* Layout: preview takes 1/3, properties 2/3 */
+.creator-layout {
+    display: flex;
+    gap: 1.5rem;
+}
+
+/* Preview column */
+.preview-container {
+    flex: 1 1 33%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.preview-container h3 {
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+    text-align: center;
+}
+
+/* Properties column */
+.properties-container {
+    flex: 2 1 67%;
+    display: flex;
+    flex-direction: column;
+}
+
+.properties-container h3 {
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+/* Existing responsiveness */
+@media (max-width: 768px) {
+    .creator-layout {
+        flex-direction: column;
+    }
+
+    .preview-container,
+    .properties-container {
+        flex: none;
+        width: 100%;
+    }
+}
