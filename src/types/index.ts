@@ -1,3 +1,5 @@
+// src/types/index.ts
+
 // === Card data model ===
 
 export interface Card {
@@ -25,6 +27,13 @@ export interface Card {
     attributeImageUrl: string;
     cardImageUrl: string;
     overlayImageUrl: string;
+
+    // Uploaded image filenames
+    factionName?: string;
+    typeName?: string;
+    attributeName?: string;
+    cardName?: string;
+    overlayName?: string;
 }
 
 // === Layout configuration types ===

@@ -23,7 +23,6 @@ const BatchCardCreator: React.FC = () => {
             try {
                 const parsed = JSON.parse(ev.target?.result as string);
                 if (!Array.isArray(parsed)) throw new Error('JSON must be an array');
-
                 const newCards: Card[] = parsed.map((item: any) => ({
                     id: item.id,
                     name: item.name || '',
@@ -46,7 +45,6 @@ const BatchCardCreator: React.FC = () => {
                     cardImageUrl: '',
                     overlayImageUrl: '',
                 }));
-
                 setCards(newCards);
                 setError('');
             } catch (err: any) {
@@ -67,6 +65,13 @@ const BatchCardCreator: React.FC = () => {
             if (f) arr.push(f);
         }
         setUploadedFiles(prev => [...prev, ...arr]);
+    };
+
+    // Clear everything
+    const clearAll = () => {
+        setCards([]);
+        setUploadedFiles([]);
+        setError('');
     };
 
     // Build & download ZIP
@@ -90,7 +95,6 @@ const BatchCardCreator: React.FC = () => {
             });
 
         for (const card of cards) {
-            // find files by name
             const artFile = uploadedFiles.find(f => f.name === card.artworkName);
             const ovFile = uploadedFiles.find(f => f.name === card.overlay);
             const canvas = document.createElement('canvas');
@@ -120,15 +124,18 @@ const BatchCardCreator: React.FC = () => {
 
     return (
         <div className="batch-container">
-            <h2>Batch Card Creator</h2>
-
             <div className="upload-controls">
                 <button className="btn" onClick={() => jsonInputRef.current?.click()}>
                     Upload JSON
                 </button>
+                &nbsp;
                 <button className="btn" onClick={() => filesInputRef.current?.click()}>
                     Upload Files
                 </button>
+                <button className="btn clear-btn" onClick={clearAll}>
+                    Clear All Fields
+                </button>
+
                 <input
                     type="file"
                     accept=".json"
@@ -182,6 +189,17 @@ const BatchCardCreator: React.FC = () => {
                         ))}
                     </tbody>
                 </table>
+            </div>
+
+            <h3>Uploaded Files</h3>
+            <div className="uploaded-files">
+                <div className="uploaded-files-grid">
+                    {uploadedFiles.map(f => (
+                        <div key={f.name} className="uploaded-file-item">
+                            {f.name}
+                        </div>
+                    ))}
+                </div>
             </div>
 
             <button className="btn build-btn" onClick={buildCards}>

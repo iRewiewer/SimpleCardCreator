@@ -2,25 +2,18 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import CardPreview from '../components/CardPreview';
-import CardPropertiesPanel, {
-    FieldKey,
-    FileFieldKey,
-} from '../components/CardPropertiesPanel';
+import CardPropertiesPanel, { FieldKey, FileFieldKey } from '../components/CardPropertiesPanel';
 import Modal from '../components/Modal';
 import TextRegionEditor from '../components/TextRegionEditor';
 import FileRegionEditor from '../components/FileRegionEditor';
-import { Card, TextRegion, CardTemplate } from '../types';
+import { Card, TextRegion } from '../types';
 import { cardTemplates } from '../types/cardTemplates';
 import html2canvas from 'html2canvas';
 import { saveAs } from 'file-saver';
 import '../styles/single-card-creator.css';
 
-type TemplateKey = keyof CardTemplate;
-
-// key for localStorage
 const STORAGE_KEY = 'singleCardCreatorData';
 
-// default empty card
 const initialCard: Card = {
     id: 0,
     name: '',
@@ -44,7 +37,6 @@ const initialCard: Card = {
     overlayImageUrl: '',
 };
 
-// default region for image editors
 const DEFAULT_IMAGE_REGION: TextRegion = {
     x: 0,
     y: 0,
@@ -55,7 +47,7 @@ const DEFAULT_IMAGE_REGION: TextRegion = {
 const SingleCardCreator: React.FC = () => {
     // --- State hooks ---
     const [card, setCard] = useState<Card>(initialCard);
-    const [overrides, setOverrides] = useState<Partial<Record<TemplateKey, TextRegion>>>({});
+    const [overrides, setOverrides] = useState<Partial<Record<keyof typeof cardTemplates.default, TextRegion>>>({});
     const [imageOverrides, setImageOverrides] = useState<Partial<Record<FileFieldKey, TextRegion>>>({});
     const [didLoad, setDidLoad] = useState(false);
 
@@ -84,19 +76,18 @@ const SingleCardCreator: React.FC = () => {
     // save to localStorage whenever relevant state changes (after load)
     useEffect(() => {
         if (!didLoad) return;
-        const payload = { card, overrides, imageOverrides };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ card, overrides, imageOverrides }));
     }, [didLoad, card, overrides, imageOverrides]);
 
     // --- Text editor handlers ---
     const openTextEditor = (field: FieldKey) => {
         setEditingField(field);
-        const key = field.toLowerCase() as TemplateKey;
+        const key = field.toLowerCase() as keyof typeof cardTemplates.default;
         setSavedRegion(overrides[key]);
     };
     const cancelTextTemplate = () => {
         if (editingField) {
-            const key = editingField.toLowerCase() as TemplateKey;
+            const key = editingField.toLowerCase() as keyof typeof cardTemplates.default;
             setOverrides(o => {
                 const copy = { ...o };
                 if (savedRegion !== undefined) copy[key] = savedRegion;
@@ -109,7 +100,7 @@ const SingleCardCreator: React.FC = () => {
     };
     const saveTextTemplate = (region: TextRegion) => {
         if (editingField) {
-            const key = editingField.toLowerCase() as TemplateKey;
+            const key = editingField.toLowerCase() as keyof typeof cardTemplates.default;
             setOverrides(o => ({ ...o, [key]: region }));
         }
         setEditingField(null);
@@ -143,8 +134,8 @@ const SingleCardCreator: React.FC = () => {
 
     // --- Helpers for initial regions ---
     const initialTextRegion = (field: FieldKey): TextRegion => {
-        const key = field.toLowerCase() as TemplateKey;
-        return overrides[key] ?? cardTemplates.default[key]!;
+        const key = field.toLowerCase() as keyof typeof cardTemplates.default;
+        return overrides[key] ?? cardTemplates.default[key];
     };
     const initialImageRegion = (field: FileFieldKey): TextRegion =>
         imageOverrides[field] ?? DEFAULT_IMAGE_REGION;
@@ -161,6 +152,28 @@ const SingleCardCreator: React.FC = () => {
         });
     };
 
+    // --- Download JSON (filenames only) ---
+    const downloadJson = () => {
+        const {
+            factionImageUrl,
+            typeImageUrl,
+            attributeImageUrl,
+            cardImageUrl,
+            overlayImageUrl,
+            ...rest
+        } = card;
+        const jsonObj = {
+            ...rest,
+            factionImage: (card as any).factionName || '',
+            typeImage: (card as any).typeName || '',
+            attributeImage: (card as any).attributeName || '',
+            cardImage: (card as any).cardName || '',
+            overlayImage: (card as any).overlayName || '',
+        };
+        const blob = new Blob([JSON.stringify(jsonObj, null, 2)], { type: 'application/json' });
+        saveAs(blob, `${card.name || 'card'}.json`);
+    };
+
     // --- Clear All: reset state & storage ---
     const clearAll = () => {
         setCard(initialCard);
@@ -171,13 +184,11 @@ const SingleCardCreator: React.FC = () => {
 
     return (
         <div className="single-container">
-            {/* top‑right Clear All */}
             <div className="top-actions">
                 <button className="btn clear-btn" onClick={clearAll}>
                     Clear All Fields
                 </button>
             </div>
-            <h2>Card Creator</h2>
             <div className="creator-layout">
                 <div className="preview-container">
                     <div ref={previewRef}>
@@ -187,9 +198,15 @@ const SingleCardCreator: React.FC = () => {
                             imageOverrides={imageOverrides}
                         />
                     </div>
-                    <button className="btn generate-btn" onClick={generatePng}>
-                        Generate PNG
-                    </button>
+                    <div className="btn-group">
+                        <button className="btn generate-btn" onClick={generatePng}>
+                            Generate Card
+                        </button>
+                        &nbsp;
+                        <button className="btn get-json-btn" onClick={downloadJson}>
+                            Get JSON
+                        </button>
+                    </div>
                 </div>
                 <div className="properties-container">
                     <CardPropertiesPanel
@@ -206,7 +223,7 @@ const SingleCardCreator: React.FC = () => {
                         field={editingField}
                         initial={initialTextRegion(editingField)}
                         onPreviewChange={region => {
-                            const key = editingField.toLowerCase() as TemplateKey;
+                            const key = editingField.toLowerCase() as keyof typeof cardTemplates.default;
                             setOverrides(o => ({ ...o, [key]: region }));
                         }}
                         onSave={saveTextTemplate}
@@ -219,9 +236,9 @@ const SingleCardCreator: React.FC = () => {
                     <FileRegionEditor
                         field={editingImageField}
                         initial={initialImageRegion(editingImageField)}
-                        onPreviewChange={region => {
-                            setImageOverrides(o => ({ ...o, [editingImageField!]: region }));
-                        }}
+                        onPreviewChange={region =>
+                            setImageOverrides(o => ({ ...o, [editingImageField]: region }))
+                        }
                         onSave={saveFileTemplate}
                         onCancel={cancelFileTemplate}
                     />

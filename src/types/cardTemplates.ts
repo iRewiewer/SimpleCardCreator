@@ -1,3 +1,5 @@
+// src/types/cardTemplates.ts
+
 import {
     CardTemplate,
 } from '../types';

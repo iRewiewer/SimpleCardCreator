@@ -70,7 +70,15 @@ const CardForm: React.FC<CardFormProps> = ({
         if (!file) return;
         const reader = new FileReader();
         reader.onload = ev => {
-            onChange({ ...card, [field]: ev.target?.result as string } as Card);
+            const nameKey = (field.replace(
+                'ImageUrl',
+                'Name',
+            ) as keyof Card) as keyof typeof card;
+            onChange({
+                ...card,
+                [field]: ev.target?.result as string,
+                [nameKey]: file.name,
+            } as Card);
         };
         reader.readAsDataURL(file);
     };
