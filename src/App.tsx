@@ -7,11 +7,13 @@ import BatchCardCreator from './pages/BatchCardCreator';
 const App: React.FC = () => (
     <BrowserRouter>
         <Navbar />
-        <Routes>
-            <Route path="/single" element={<SingleCardCreator />} />
-            <Route path="/batch" element={<BatchCardCreator />} />
-            <Route path="*" element={<Navigate to="/single" replace />} />
-        </Routes>
+        <BrowserRouter basename="/SimpleCardCreator">
+            <Routes>
+                <Route path="/single" element={<SingleCardCreator />} />
+                <Route path="/batch" element={<BatchCardCreator />} />
+                <Route path="*" element={<Navigate to="/single" replace />} />
+            </Routes>
+        </BrowserRouter>
     </BrowserRouter>
 );
 
