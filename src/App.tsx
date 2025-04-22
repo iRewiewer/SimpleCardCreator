@@ -5,15 +5,13 @@ import SingleCardCreator from './pages/SingleCardCreator';
 import BatchCardCreator from './pages/BatchCardCreator';
 
 const App: React.FC = () => (
-    <BrowserRouter>
+    <BrowserRouter basename="/SimpleCardCreator">
         <Navbar />
-        <BrowserRouter basename="/SimpleCardCreator">
-            <Routes>
-                <Route path="/single" element={<SingleCardCreator />} />
-                <Route path="/batch" element={<BatchCardCreator />} />
-                <Route path="*" element={<Navigate to="/single" replace />} />
-            </Routes>
-        </BrowserRouter>
+        <Routes>
+            <Route path="/single" element={<SingleCardCreator />} />
+            <Route path="/batch" element={<BatchCardCreator />} />
+            <Route path="*" element={<Navigate to="/single" replace />} />
+        </Routes>
     </BrowserRouter>
 );
 
