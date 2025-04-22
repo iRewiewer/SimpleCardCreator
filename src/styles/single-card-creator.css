@@ -71,3 +71,84 @@
         width: 100%;
     }
 }
+
+/* Enlarge all modals (you can target more specifically if needed) */
+.modal-content {
+    width: 90vw !important;
+    max-width: 900px !important;
+    height: 80vh !important;
+    max-height: 800px !important;
+    padding: 1rem;
+    overflow: auto;
+}
+
+/* If you want the textarea in the paste‑JSON modal to fill most of that space: */
+.modal-content textarea {
+    width: 100%;
+    height: calc(75vh - 6rem);
+    box-sizing: border-box;
+    resize: none;
+    background-color: var(--bg);
+    color: var(--fg);
+}
+
+/* Container for labels + switch */
+.json-mode-selector {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 0;
+    font-size: 0.875rem;
+}
+
+/* Labels beside the switch */
+.json-mode-label {
+    user-select: none;
+}
+
+/* The track of the switch */
+.json-mode-switch {
+    position: relative;
+    display: inline-block;
+    width: 3.45rem;
+    height: 1.45rem;
+    background: #d1d5db;
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+/* When checked = filename mode */
+.json-mode-switch[data-state="checked"] {
+    background: #2563eb;
+}
+
+/* The knob inside the switch */
+.json-mode-thumb {
+    position: absolute;
+    top: 0.125rem;
+    left: 0.125rem;
+    width: 1rem;
+    height: 1rem;
+    background: #ffffff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+}
+
+/* Move knob to the right when checked */
+.json-mode-switch[data-state="checked"] .json-mode-thumb {
+    transform: translateX(2rem);
+}
+
+/* fallback on aria-checked if data-state is missing */
+.json-mode-switch[aria-checked="true"],
+.json-mode-switch[data-state="checked"] {
+    background: var(--toggle-bg);
+}
+
+.json-mode-switch[aria-checked="true"] .json-mode-thumb,
+.json-mode-switch[data-state="checked"] .json-mode-thumb {
+    transform: translateX(2rem);
+}

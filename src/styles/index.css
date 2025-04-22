@@ -25,6 +25,7 @@ code {
     --btn-hover: rgba(0, 0, 0, 0.4);
     --nav-shadow: rgba(0, 0, 0, 0.1);
     --border: #ccc;
+    --toggle-bg: #3469dc;
     --card-bg: #fff;
     --file-bg: rgba(255, 255, 255, 0.1);
     --error: red;
@@ -39,6 +40,7 @@ code {
     --btn-hover: rgba(255, 255, 255, 0.1);
     --nav-shadow: rgba(0, 0, 0, 0.5);
     --border: #555;
+    --toggle-bg: #16419e;
     --card-bg: #2d3748;
     --file-bg: rgba(255, 255, 255, 0.1);
     --error: #f56565;

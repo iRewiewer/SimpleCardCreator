@@ -1,9 +1,10 @@
 // src/pages/BatchCardCreator.tsx
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, ChangeEvent } from 'react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { Card } from '../types';
+import { mergeCardJson } from '../utils/mergeJson';
 import '../styles/batch-card-creator.css';
 
 const BatchCardCreator: React.FC = () => {
@@ -14,8 +15,32 @@ const BatchCardCreator: React.FC = () => {
     const jsonInputRef = useRef<HTMLInputElement | null>(null);
     const filesInputRef = useRef<HTMLInputElement | null>(null);
 
-    // Load JSON
-    const handleJsonUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // a “blank” card to merge into
+    const initialCard: Card = {
+        id: 0,
+        name: '',
+        description: '',
+        artworkName: '',
+        overlay: '',
+        faction: '',
+        attribute: '',
+        type: '',
+        ATK: 0,
+        HP: 0,
+        series: '',
+        nameFontUrl: '',
+        descriptionFontUrl: '',
+        atkFontUrl: '',
+        hpFontUrl: '',
+        factionImageUrl: '',
+        typeImageUrl: '',
+        attributeImageUrl: '',
+        cardImageUrl: '',
+        overlayImageUrl: '',
+    };
+
+    // Load JSON (uses mergeCardJson to preserve any blobs)
+    const handleJsonUpload = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
         const reader = new FileReader();
@@ -23,28 +48,10 @@ const BatchCardCreator: React.FC = () => {
             try {
                 const parsed = JSON.parse(ev.target?.result as string);
                 if (!Array.isArray(parsed)) throw new Error('JSON must be an array');
-                const newCards: Card[] = parsed.map((item: any) => ({
-                    id: item.id,
-                    name: item.name || '',
-                    description: item.description || '',
-                    artworkName: item.artworkName || '',
-                    overlay: item.overlay || '',
-                    faction: item.faction || '',
-                    attribute: item.attribute || '',
-                    type: item.type || 'Unit',
-                    ATK: item.ATK ?? 0,
-                    HP: item.HP ?? 0,
-                    series: item.series || '',
-                    nameFontUrl: '',
-                    descriptionFontUrl: '',
-                    atkFontUrl: '',
-                    hpFontUrl: '',
-                    factionImageUrl: '',
-                    typeImageUrl: '',
-                    attributeImageUrl: '',
-                    cardImageUrl: '',
-                    overlayImageUrl: '',
-                }));
+
+                const newCards: Card[] = parsed.map((item: any) =>
+                    mergeCardJson(initialCard, item)
+                );
                 setCards(newCards);
                 setError('');
             } catch (err: any) {
@@ -56,7 +63,7 @@ const BatchCardCreator: React.FC = () => {
     };
 
     // Handle image uploads
-    const handleFilesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFilesUpload = (e: ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (!files) return;
         const arr: File[] = [];
@@ -118,12 +125,15 @@ const BatchCardCreator: React.FC = () => {
             folder.file(name, blob);
         }
 
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
         const zipBlob = await zip.generateAsync({ type: 'blob' });
-        saveAs(zipBlob, `batch-cards-${Date.now()}.zip`);
+        saveAs(zipBlob, `cards-${timestamp}.zip`);
     };
 
     return (
         <div className="batch-container">
+            <h2>Batch Card Creator</h2>
+
             <div className="upload-controls">
                 <button className="btn" onClick={() => jsonInputRef.current?.click()}>
                     Upload JSON
@@ -132,10 +142,11 @@ const BatchCardCreator: React.FC = () => {
                 <button className="btn" onClick={() => filesInputRef.current?.click()}>
                     Upload Files
                 </button>
+                &nbsp;
                 <button className="btn clear-btn" onClick={clearAll}>
                     Clear All Fields
                 </button>
-
+                &nbsp;
                 <input
                     type="file"
                     accept=".json"
