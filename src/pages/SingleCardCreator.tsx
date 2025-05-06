@@ -194,23 +194,67 @@ const SingleCardCreator: React.FC = () => {
         });
     };
 
-    // --- Download JSON based on mode ---
+    // --- Download JSON with full region data ---
     const downloadJson = () => {
-        let obj: any = {};
-        if (jsonMode === 'blob') {
-            obj = card;
-        } else {
-            const { factionImageUrl, typeImageUrl, attributeImageUrl, cardImageUrl, overlayImageUrl, ...rest } = card;
-            obj = {
-                ...rest,
-                factionImage: (card as any).factionName || '',
-                typeImage: (card as any).typeName || '',
-                attributeImage: (card as any).attributeName || '',
-                cardImage: (card as any).cardName || '',
-                overlayImage: (card as any).overlayName || '',
+        const textFields: FieldKey[] = [
+            'name', 'description', 'ATK', 'HP', 'faction', 'attribute', 'type', 'series'
+        ];
+        const fileFields: FileFieldKey[] = [
+            'faction', 'type', 'attribute', 'card', 'overlay'
+        ];
+
+        // start with card ID
+        const exportObj: Record<string, any> = { id: card.id };
+
+        // include text regions (value + layout/styling)
+        textFields.forEach(field => {
+            const key = field.toLowerCase() as keyof typeof cardTemplates.default;
+            const baseRegion = cardTemplates.default[key];
+            const userRegion = overrides[key] || {};
+            // merge layout + any user overrides
+            const region = { ...baseRegion, ...userRegion };
+
+            exportObj[field] = {
+                text: (card as any)[field],
+
+                // layout
+                x: region.x,
+                y: region.y,
+                maxWidth: region.maxWidth,
+                maxHeight: region.maxHeight,
+
+                // styling
+                color: region.color ?? '#000000',
+                fontSize: region.fontSize ?? 16,
+                textDecoration: region.textDecoration ?? [],
+                textAlign: region.textAlign ?? 'left',
+
+                // which font‐file to use
+                fontFile: (card as any)[`${field}FontUrl`],
             };
-        }
-        const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+        });
+
+
+        // include file regions (filename + layout)
+        fileFields.forEach(field => {
+            const nameKey = `${field}Name` as keyof Card;
+            const blobKey = `${field}ImageUrl` as keyof Card;
+            const baseRegion = DEFAULT_IMAGE_REGION;
+            const userRegion = imageOverrides[field] || {};
+            const region = { ...baseRegion, ...userRegion };
+
+            exportObj[field] = {
+                fileData: jsonMode === 'filename'
+                    ? (card as any)[nameKey]   // e.g. "Disarm.png"
+                    : (card as any)[blobKey],  // e.g. "data:image/png;base64,…"
+                x: region.x,
+                y: region.y,
+                maxWidth: region.maxWidth,
+                maxHeight: region.maxHeight,
+            };
+        });
+
+        const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
         saveAs(blob, `${card.name || 'card'}.json`);
     };
 
@@ -226,17 +270,11 @@ const SingleCardCreator: React.FC = () => {
     return (
         <div className="single-container">
             <div className="top-actions">
-                <button
-                    className="btn"
-                    onClick={() => jsonFileInputRef.current?.click()}
-                >
+                <button className="btn" onClick={() => jsonFileInputRef.current?.click()}>
                     Load JSON from File
                 </button>
                 &nbsp;&nbsp;
-                <button
-                    className="btn"
-                    onClick={() => setShowPasteModal(true)}
-                >
+                <button className="btn" onClick={() => setShowPasteModal(true)}>
                     Load JSON
                 </button>
                 &nbsp;&nbsp;
@@ -262,11 +300,9 @@ const SingleCardCreator: React.FC = () => {
                         />
                     </div>
 
-                    {/* Toggle for JSON mode */}
                     <div className="json-mode-selector">
                         <span className="json-mode-label">Image Blob</span>
                         <Switch
-                            // keep track of state for CSS hooks
                             data-state={jsonMode === 'filename' ? 'checked' : 'unchecked'}
                             checked={jsonMode === 'filename'}
                             onChange={val => setJsonMode(val ? 'filename' : 'blob')}
@@ -333,9 +369,7 @@ const SingleCardCreator: React.FC = () => {
                     <FileRegionEditor
                         field={editingImageField}
                         initial={initialImageRegion(editingImageField)}
-                        onPreviewChange={region =>
-                            setImageOverrides(o => ({ ...o, [editingImageField]: region }))
-                        }
+                        onPreviewChange={region => setImageOverrides(o => ({ ...o, [editingImageField]: region }))}
                         onSave={saveFileTemplate}
                         onCancel={cancelFileTemplate}
                     />
