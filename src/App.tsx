@@ -5,7 +5,7 @@ import SingleCardCreator from './pages/SingleCardCreator';
 import BatchCardCreator from './pages/BatchCardCreator';
 
 const App: React.FC = () => (
-    <HashRouter basename="/SimpleCardCreator">
+    <HashRouter>
         <Navbar />
         <Routes>
             <Route path="/single" element={<SingleCardCreator />} />
