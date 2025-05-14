@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/SimpleCardCreator/static/css/main.4ae8a2f3.css",
+    "main.js": "/SimpleCardCreator/static/js/main.788acc36.js",
+    "static/js/453.3404c03e.chunk.js": "/SimpleCardCreator/static/js/453.3404c03e.chunk.js",
+    "index.html": "/SimpleCardCreator/index.html",
+    "main.4ae8a2f3.css.map": "/SimpleCardCreator/static/css/main.4ae8a2f3.css.map",
+    "main.788acc36.js.map": "/SimpleCardCreator/static/js/main.788acc36.js.map",
+    "453.3404c03e.chunk.js.map": "/SimpleCardCreator/static/js/453.3404c03e.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.4ae8a2f3.css",
+    "static/js/main.788acc36.js"
+  ]
+}
