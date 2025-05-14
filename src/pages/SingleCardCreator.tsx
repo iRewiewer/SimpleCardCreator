@@ -1,6 +1,6 @@
 // src/pages/SingleCardCreator.tsx
 
-import React, { useState, useRef, useEffect, ChangeEvent } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import CardPreview from '../components/CardPreview';
 import CardPropertiesPanel, { FieldKey, FileFieldKey } from '../components/CardPropertiesPanel';
 import Modal from '../components/Modal';
@@ -11,12 +11,10 @@ import { cardTemplates } from '../types/cardTemplates';
 import html2canvas from 'html2canvas';
 import { saveAs } from 'file-saver';
 import { mergeCardJson } from '../utils/mergeJson';
-import { Switch } from '@headlessui/react';
+import type { MergeResult } from '../utils/mergeJson'
 import '../styles/single-card-creator.css';
 
 const STORAGE_KEY = 'singleCardCreatorData';
-
-type JsonMode = 'blob' | 'filename';
 
 const initialCard: Card = {
     id: 0,
@@ -41,11 +39,17 @@ const initialCard: Card = {
     overlayImageUrl: '',
 };
 
-const DEFAULT_IMAGE_REGION: TextRegion = {
+const DEFAULT_IMAGE_REGION_SMALL: TextRegion = {
     x: 0,
     y: 0,
     maxWidth: 100,
-    maxHeight: 100,
+    maxHeight: 150,
+};
+const DEFAULT_IMAGE_REGION_FULL: TextRegion = {
+    x: 0,
+    y: 0,
+    maxWidth: 328,
+    maxHeight: 484,
 };
 
 const SingleCardCreator: React.FC = () => {
@@ -53,10 +57,10 @@ const SingleCardCreator: React.FC = () => {
     const [card, setCard] = useState<Card>(initialCard);
     const [overrides, setOverrides] = useState<Partial<Record<keyof typeof cardTemplates.default, TextRegion>>>({});
     const [imageOverrides, setImageOverrides] = useState<Partial<Record<FileFieldKey, TextRegion>>>({});
-    const [jsonMode, setJsonMode] = useState<JsonMode>('filename');
     const [didLoad, setDidLoad] = useState(false);
 
     // editor state
+    const [scale, setScale] = useState<number>(1);
     const [editingField, setEditingField] = useState<FieldKey | null>(null);
     const [savedRegion, setSavedRegion] = useState<TextRegion | undefined>(undefined);
     const [editingImageField, setEditingImageField] = useState<FileFieldKey | null>(null);
@@ -72,11 +76,10 @@ const SingleCardCreator: React.FC = () => {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
             try {
-                const { card, overrides, imageOverrides, jsonMode } = JSON.parse(stored);
+                const { card, overrides, imageOverrides } = JSON.parse(stored);
                 setCard(card);
                 setOverrides(overrides);
                 setImageOverrides(imageOverrides);
-                setJsonMode(jsonMode || 'filename');
             } catch {
                 // ignore parse errors
             }
@@ -89,37 +92,54 @@ const SingleCardCreator: React.FC = () => {
         if (!didLoad) return;
         localStorage.setItem(
             STORAGE_KEY,
-            JSON.stringify({ card, overrides, imageOverrides, jsonMode })
+            JSON.stringify({ card, overrides, imageOverrides })
         );
-    }, [didLoad, card, overrides, imageOverrides, jsonMode]);
+    }, [didLoad, card, overrides, imageOverrides]);
 
     // --- JSON load from file ---
-    const handleJsonFileLoad = (e: ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
+    async function handleJsonFileLoad(e: React.ChangeEvent<HTMLInputElement>) {
+        // Store input element to avoid React event pooling issues
+        const input = e.currentTarget;
+        const file = input.files?.[0];
         if (!file) return;
-        const reader = new FileReader();
-        reader.onload = ev => {
-            try {
-                const parsed = JSON.parse(ev.target?.result as string);
-                setCard(c => mergeCardJson(c, parsed));
-            } catch {
-                alert('Invalid JSON');
-            }
-        };
-        reader.readAsText(file);
-    };
+
+        try {
+            const text = await file.text();
+            const parsed = JSON.parse(text);
+
+            // Merge and unpack
+            const { card: newCard, textOverrides, imageOverrides }: MergeResult =
+                mergeCardJson(card, parsed);
+
+            // Apply to state
+            setCard(newCard);
+            setOverrides(textOverrides);
+            setImageOverrides(imageOverrides);
+        } catch (err) {
+            console.error('Failed to load JSON:', err);
+        } finally {
+            // reset so you can re‐select the same file
+            input.value = '';
+        }
+    }
 
     // --- JSON load from paste ---
-    const handlePasteLoad = () => {
+    function handlePasteLoad() {
         try {
             const parsed = JSON.parse(pasteJson);
-            setCard(c => mergeCardJson(c, parsed));
-            setShowPasteModal(false);
-            setPasteJson('');
-        } catch {
-            alert('Invalid JSON');
+
+            // Merge and unpack
+            const { card: newCard, textOverrides, imageOverrides }: MergeResult =
+                mergeCardJson(card, parsed);
+
+            // Apply to state
+            setCard(newCard);
+            setOverrides(textOverrides);
+            setImageOverrides(imageOverrides);
+        } catch (err) {
+            console.error('Invalid JSON pasted:', err);
         }
-    };
+    }
 
     // --- Text editor handlers ---
     const openTextEditor = (field: FieldKey) => {
@@ -180,13 +200,20 @@ const SingleCardCreator: React.FC = () => {
         return overrides[key] ?? cardTemplates.default[key];
     };
     const initialImageRegion = (field: FileFieldKey): TextRegion =>
-        imageOverrides[field] ?? DEFAULT_IMAGE_REGION;
+        imageOverrides[field] ??
+        (field === 'card' || field === 'overlay'
+            ? DEFAULT_IMAGE_REGION_FULL
+            : DEFAULT_IMAGE_REGION_SMALL);
 
     // --- Generate PNG ---
     const previewRef = useRef<HTMLDivElement>(null);
     const generatePng = async () => {
         if (!previewRef.current) return;
-        const canvas = await html2canvas(previewRef.current);
+        const canvas = await html2canvas(previewRef.current, {
+            width: 328,
+            height: 484,
+            scale: scale
+        });
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
         const cardname = `${card.name || 'card'}-${timestamp}.png`;
         canvas.toBlob(blob => {
@@ -203,50 +230,38 @@ const SingleCardCreator: React.FC = () => {
             'faction', 'type', 'attribute', 'card', 'overlay'
         ];
 
-        // start with card ID
-        const exportObj: Record<string, any> = { id: card.id };
+        const exportObj: Record<string, any> = {};
 
-        // include text regions (value + layout/styling)
         textFields.forEach(field => {
             const key = field.toLowerCase() as keyof typeof cardTemplates.default;
             const baseRegion = cardTemplates.default[key];
             const userRegion = overrides[key] || {};
-            // merge layout + any user overrides
             const region = { ...baseRegion, ...userRegion };
 
             exportObj[field] = {
                 text: (card as any)[field],
-
-                // layout
                 x: region.x,
                 y: region.y,
                 maxWidth: region.maxWidth,
                 maxHeight: region.maxHeight,
-
-                // styling
                 color: region.color ?? '#000000',
                 fontSize: region.fontSize ?? 16,
                 textDecoration: region.textDecoration ?? [],
                 textAlign: region.textAlign ?? 'left',
-
-                // which font‐file to use
                 fontFile: (card as any)[`${field}FontUrl`],
             };
         });
 
-
-        // include file regions (filename + layout)
         fileFields.forEach(field => {
-            const nameKey = `${field}Name` as keyof Card;
             const blobKey = `${field}ImageUrl` as keyof Card;
-            const baseRegion = DEFAULT_IMAGE_REGION;
+            const baseRegion = (field === 'card' || field === 'overlay')
+                ? DEFAULT_IMAGE_REGION_FULL
+                : DEFAULT_IMAGE_REGION_SMALL;
             const userRegion = imageOverrides[field] || {};
             const region = { ...baseRegion, ...userRegion };
 
             exportObj[field] = {
-                fileData: jsonMode === 'filename'
-                    ? (card as any)[nameKey]   // e.g. "Disarm.png"
-                    : (card as any)[blobKey],  // e.g. "data:image/png;base64,…"
+                fileData: (card as any)[blobKey],
                 x: region.x,
                 y: region.y,
                 maxWidth: region.maxWidth,
@@ -263,7 +278,6 @@ const SingleCardCreator: React.FC = () => {
         setCard(initialCard);
         setOverrides({});
         setImageOverrides({});
-        setJsonMode('filename');
         localStorage.removeItem(STORAGE_KEY);
     };
 
@@ -300,17 +314,16 @@ const SingleCardCreator: React.FC = () => {
                         />
                     </div>
 
-                    <div className="json-mode-selector">
-                        <span className="json-mode-label">Image Blob</span>
-                        <Switch
-                            data-state={jsonMode === 'filename' ? 'checked' : 'unchecked'}
-                            checked={jsonMode === 'filename'}
-                            onChange={val => setJsonMode(val ? 'filename' : 'blob')}
-                            className="json-mode-switch"
-                        >
-                            <span className="json-mode-thumb" aria-hidden="true" />
-                        </Switch>
-                        <span className="json-mode-label">Image Filename</span>
+                    <div className="scale-field">
+                        <label htmlFor="scale">Scale</label>
+                        <input
+                            id="scale"
+                            type="number"
+                            min="0.1"
+                            step="0.1"
+                            value={scale}
+                            onChange={e => setScale(parseFloat(e.target.value) || 1)}
+                        />
                     </div>
 
                     <div className="btn-group">

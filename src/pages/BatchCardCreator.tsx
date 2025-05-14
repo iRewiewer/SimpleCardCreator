@@ -1,21 +1,21 @@
 // src/pages/BatchCardCreator.tsx
 
 import React, { useRef, useState, ChangeEvent } from 'react';
+import { flushSync } from 'react-dom';
+import html2canvas from 'html2canvas';
+import CardPreview from '../components/CardPreview';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { Card } from '../types';
 import { mergeCardJson } from '../utils/mergeJson';
 import '../styles/batch-card-creator.css';
+import { createRoot } from 'react-dom/client';
 
 const BatchCardCreator: React.FC = () => {
     const [cards, setCards] = useState<Card[]>([]);
-    const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
     const [error, setError] = useState<string>('');
-
     const jsonInputRef = useRef<HTMLInputElement | null>(null);
-    const filesInputRef = useRef<HTMLInputElement | null>(null);
 
-    // a “blank” card to merge into
     const initialCard: Card = {
         id: 0,
         name: '',
@@ -39,90 +39,67 @@ const BatchCardCreator: React.FC = () => {
         overlayImageUrl: '',
     };
 
-    // Load JSON (uses mergeCardJson to preserve any blobs)
+    const assignIds = (arr: Card[]) =>
+        arr.map((c, i) => ({ ...c, id: i + 1 }));
+
     const handleJsonUpload = (e: ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
+        const input = e.currentTarget;
+        const file = input.files?.[0];
         if (!file) return;
         const reader = new FileReader();
         reader.onload = ev => {
             try {
                 const parsed = JSON.parse(ev.target?.result as string);
-                if (!Array.isArray(parsed)) throw new Error('JSON must be an array');
-
-                const newCards: Card[] = parsed.map((item: any) =>
-                    mergeCardJson(initialCard, item)
-                );
-                setCards(newCards);
+                const arr = Array.isArray(parsed) ? parsed : [parsed];
+                const newCards = arr.map(item => mergeCardJson(initialCard, item).card);
+                setCards(prev => assignIds([...prev, ...newCards]));
                 setError('');
             } catch (err: any) {
                 setError(err.message || 'Invalid JSON');
-                setCards([]);
             }
         };
         reader.readAsText(file);
+        input.value = '';
     };
 
-    // Handle image uploads
-    const handleFilesUpload = (e: ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-        if (!files) return;
-        const arr: File[] = [];
-        for (let i = 0; i < files.length; i++) {
-            const f = files.item(i);
-            if (f) arr.push(f);
-        }
-        setUploadedFiles(prev => [...prev, ...arr]);
-    };
-
-    // Clear everything
     const clearAll = () => {
         setCards([]);
-        setUploadedFiles([]);
         setError('');
     };
 
-    // Build & download ZIP
     const buildCards = async () => {
         if (!cards.length) return;
         const zip = new JSZip();
         const folder = zip.folder('cards')!;
 
-        const fileToDataUrl = (file: File): Promise<string> =>
-            new Promise(res => {
-                const r = new FileReader();
-                r.onload = e => res(e.target?.result as string);
-                r.readAsDataURL(file);
+        for (const cardData of cards) {
+            const container = document.createElement('div');
+            container.style.position = 'absolute';
+            container.style.top = '-9999px';
+            container.style.left = '-9999px';
+            document.body.appendChild(container);
+
+            const root = createRoot(container);
+            flushSync(() => {
+                root.render(<CardPreview
+                    card={cardData}
+                    templateOverrides={{}}
+                    imageOverrides={{}}
+                />);
             });
-        const loadImage = (url: string): Promise<HTMLImageElement> =>
-            new Promise((res, rej) => {
-                const img = new Image();
-                img.onload = () => res(img);
-                img.onerror = rej;
-                img.src = url;
-            });
 
-        for (const card of cards) {
-            const artFile = uploadedFiles.find(f => f.name === card.artworkName);
-            const ovFile = uploadedFiles.find(f => f.name === card.overlay);
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d')!;
+            const canvas = await html2canvas(container, { scale: 1, useCORS: true });
+            root.unmount();
+            document.body.removeChild(container);
 
-            if (artFile) {
-                const artUrl = await fileToDataUrl(artFile);
-                const artImg = await loadImage(artUrl);
-                canvas.width = artImg.width;
-                canvas.height = artImg.height;
-                ctx.drawImage(artImg, 0, 0);
-            }
-            if (ovFile) {
-                const ovUrl = await fileToDataUrl(ovFile);
-                const ovImg = await loadImage(ovUrl);
-                ctx.drawImage(ovImg, 0, 0, canvas.width, canvas.height);
-            }
+            const blob = await new Promise<Blob | null>(resolve =>
+                canvas.toBlob(resolve as any)
+            );
+            if (!blob) throw new Error('canvas.toBlob returned null');
 
-            const blob = await new Promise<Blob>(r => canvas.toBlob(r as any)!);
-            const name = card.artworkName.replace(/\..+$/, '') + '.png';
-            folder.file(name, blob);
+            let filename = cardData.artworkName.replace(/\..+$/, '').trim();
+            if (!filename) filename = `${cardData.id}-${cardData.name}`;
+            folder.file(`${filename}.png`, blob);
         }
 
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
@@ -130,23 +107,30 @@ const BatchCardCreator: React.FC = () => {
         saveAs(zipBlob, `cards-${timestamp}.zip`);
     };
 
+    const exportJson = () => {
+        if (!cards.length) return;
+        const data = JSON.stringify(cards, null, 2);
+        const blob = new Blob([data], { type: 'application/json' });
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        saveAs(blob, `cards-${timestamp}.json`);
+    };
+
     return (
         <div className="batch-container">
             <h2>Batch Card Creator</h2>
-
             <div className="upload-controls">
                 <button className="btn" onClick={() => jsonInputRef.current?.click()}>
-                    Upload JSON
+                    Add Card(s) JSON
                 </button>
-                &nbsp;
-                <button className="btn" onClick={() => filesInputRef.current?.click()}>
-                    Upload Files
+                <button className="btn build-btn-top" onClick={buildCards}>
+                    Build
                 </button>
-                &nbsp;
+                <button className="btn export-btn" onClick={exportJson}>
+                    Export JSON
+                </button>
                 <button className="btn clear-btn" onClick={clearAll}>
                     Clear All Fields
                 </button>
-                &nbsp;
                 <input
                     type="file"
                     accept=".json"
@@ -154,24 +138,16 @@ const BatchCardCreator: React.FC = () => {
                     className="hidden-input"
                     onChange={handleJsonUpload}
                 />
-                <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    ref={filesInputRef}
-                    className="hidden-input"
-                    onChange={handleFilesUpload}
-                />
             </div>
-
             {error && <div className="error">{error}</div>}
-
             <h3>Cards</h3>
             <div className="table-wrapper">
                 <table className="cards-table">
                     <thead>
                         <tr>
+                            <th></th>
                             <th>ID</th>
+                            <th>Preview</th>
                             <th>Name</th>
                             <th>Type</th>
                             <th>Faction</th>
@@ -179,14 +155,33 @@ const BatchCardCreator: React.FC = () => {
                             <th>Description</th>
                             <th>ATK</th>
                             <th>HP</th>
-                            <th>Artwork</th>
-                            <th>Overlay</th>
+                            <th>Card Img</th>
+                            <th>Overlay Img</th>
+                            <th>Faction Img</th>
+                            <th>Type Img</th>
+                            <th>Attribute Img</th>
                         </tr>
                     </thead>
                     <tbody>
                         {cards.map((c, i) => (
                             <tr key={i}>
+                                <td>
+                                    <button className="btn" onClick={() =>
+                                        setCards(cs => assignIds(cs.filter((_, idx) => idx !== i)))
+                                    }>
+                                        X
+                                    </button>
+                                </td>
                                 <td>{c.id}</td>
+                                <td>
+                                    <div className="preview-cell">
+                                        <CardPreview
+                                            card={c}
+                                            templateOverrides={{}}
+                                            imageOverrides={{}}
+                                        />
+                                    </div>
+                                </td>
                                 <td>{c.name}</td>
                                 <td>{c.type}</td>
                                 <td>{c.faction}</td>
@@ -194,26 +189,17 @@ const BatchCardCreator: React.FC = () => {
                                 <td>{c.description}</td>
                                 <td>{c.ATK}</td>
                                 <td>{c.HP}</td>
-                                <td>{c.artworkName}</td>
-                                <td>{c.overlay}</td>
+                                <td><div className="img-cell"><img src={c.cardImageUrl} alt="card" /></div></td>
+                                <td><div className="img-cell"><img src={c.overlayImageUrl} alt="overlay" /></div></td>
+                                <td><div className="img-cell"><img src={c.factionImageUrl} alt="faction" /></div></td>
+                                <td><div className="img-cell"><img src={c.typeImageUrl} alt="type" /></div></td>
+                                <td><div className="img-cell"><img src={c.attributeImageUrl} alt="attribute" /></div></td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
-
-            <h3>Uploaded Files</h3>
-            <div className="uploaded-files">
-                <div className="uploaded-files-grid">
-                    {uploadedFiles.map(f => (
-                        <div key={f.name} className="uploaded-file-item">
-                            {f.name}
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            <button className="btn build-btn" onClick={buildCards}>
+            <button className="btn build-btn-bot" onClick={buildCards}>
                 Build
             </button>
         </div>

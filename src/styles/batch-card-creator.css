@@ -1,14 +1,10 @@
 .batch-container {
+    max-height: 85vh;
+    height: 100vh;
     padding: 1rem;
     background-color: var(--bg);
     color: var(--fg);
     transition: background-color 300ms ease, color 300ms ease;
-}
-
-.mode-switch {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
 }
 
 .upload-controls {
@@ -44,8 +40,17 @@
     background-color: var(--btn-hover, #0056b3);
 }
 
-.build-btn {
+.build-btn-top {
+    margin-left: 0.5rem;
+}
+
+.build-btn-bot {
     margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.export-btn {
+    margin-left: 0.5rem;
 }
 
 .hidden-input {
@@ -59,7 +64,6 @@
 }
 
 .table-wrapper {
-    max-height: 300px;
     overflow-y: auto;
 }
 
@@ -90,6 +94,15 @@
     background-color: #555;
 }
 
+.preview-cell .card-preview {
+    width: 240px;
+    height: 360px;
+}
+
+.img-cell img {
+    width: 100px;
+    height: 150px;
+}
 
 .cards-table {
     width: 100%;

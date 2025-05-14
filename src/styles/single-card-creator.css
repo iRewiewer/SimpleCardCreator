@@ -152,3 +152,38 @@
 .json-mode-switch[data-state="checked"] .json-mode-thumb {
     transform: translateX(2rem);
 }
+
+/* Scale field (match the style of your CardPropertiesPanel inputs) */
+.scale-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.scale-field label {
+    /* match your panel’s label styling */
+    font-size: 0.875rem;
+    color: var(--fg);
+    user-select: none;
+}
+
+.scale-field input[type="number"] {
+    /* match your panel’s input styling */
+    background-color: var(--bg);
+    color: var(--fg);
+    border: 1px solid #444;
+    /* tweak to match your panel’s border color */
+    border-radius: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    width: 5rem;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+/* adjust focus to match your other fields (if you have a focus style): */
+.scale-field input[type="number"]:focus {
+    outline: 2px solid #2563eb;
+    /* or whatever focus-ring your theme uses */
+    outline-offset: 2px;
+}

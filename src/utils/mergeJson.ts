@@ -1,44 +1,115 @@
 // src/utils/mergeJson.ts
 
-import { Card } from '../types';
+import { Card, TextRegion, TextDecoration, TextAlign } from '../types';
+import { cardTemplates } from '../types/cardTemplates';
 
-// the five “prefixes” you support
+// Result of merging: updated card + region overrides
+export interface MergeResult {
+    card: Card;
+    textOverrides: Partial<Record<keyof typeof cardTemplates.default, TextRegion>>;
+    imageOverrides: Partial<Record<ImageField, TextRegion>>;
+}
+
+// JSON shapes for nested regions, using actual types
+type JsonTextRegion = {
+    text: string;
+    x: number;
+    y: number;
+    maxWidth: number;
+    maxHeight: number;
+    color?: string;
+    fontSize?: number;
+    textDecoration?: TextDecoration[];
+    textAlign?: TextAlign;
+    fontFile?: string;
+};
+
+type JsonFileRegion = {
+    fileData: string;
+    x: number;
+    y: number;
+    maxWidth: number;
+    maxHeight: number;
+};
+
+// Supported image field prefixes
 const IMAGE_FIELDS = ['faction', 'type', 'attribute', 'card', 'overlay'] as const;
-type ImageField = typeof IMAGE_FIELDS[number];
+export type ImageField = typeof IMAGE_FIELDS[number];
 
-// JSON coming in may have e.g. { factionImage: 'foo.png', factionImageUrl: 'data:...' }
-type JsonCard = Partial<Card> & Record<`${ImageField}Image`, string>;
+// Type guards
+function isJsonTextRegion(val: any): val is JsonTextRegion {
+    return val != null && typeof val === 'object' && typeof val.text === 'string';
+}
 
-export function mergeCardJson(existing: Card, parsed: JsonCard): Card {
-    // use `any` here so we can assign dynamic keys without TS errors
-    const out = { ...existing } as any;
+function isJsonFileRegion(val: any): val is JsonFileRegion {
+    return val != null && typeof val === 'object' && typeof val.fileData === 'string';
+}
 
-    // 1) copy over scalar props
-    ([
-        'id', 'name', 'description', 'artworkName', 'overlay',
-        'faction', 'attribute', 'type', 'ATK', 'HP', 'series',
-    ] as (keyof Card)[]).forEach(k => {
-        if (parsed[k] !== undefined) {
-            out[k] = parsed[k];
+/**
+ * Merge incoming JSON (flat or nested export) into existing Card,
+ * extracting updated card plus region overrides.
+ */
+export function mergeCardJson(existing: Card, parsed: any): MergeResult {
+    const out: any = { ...existing };
+    const textOverrides: MergeResult['textOverrides'] = {};
+    const imageOverrides: MergeResult['imageOverrides'] = {};
+
+    // Text fields with potential nested regions
+    const TEXT_FIELDS = ['name', 'description', 'ATK', 'HP', 'faction', 'attribute', 'type', 'series'] as const;
+
+    TEXT_FIELDS.forEach(f => {
+        const val = parsed[f];
+        const key = (f === 'ATK' ? 'ATK' : f === 'HP' ? 'HP' : f) as keyof typeof cardTemplates.default;
+
+        if (isJsonTextRegion(val)) {
+            // Merge text
+            out[f] = (f === 'ATK' || f === 'HP') ? Number(val.text) : val.text;
+            // Merge font URL
+            if (val.fontFile) {
+                const fontKey = f === 'ATK' ? 'ATKFontUrl' : f === 'HP' ? 'HPFontUrl' : (`${f}FontUrl` as keyof Card);
+                out[fontKey] = val.fontFile;
+            }
+            // Extract region override
+            textOverrides[key] = {
+                x: val.x,
+                y: val.y,
+                maxWidth: val.maxWidth,
+                maxHeight: val.maxHeight,
+                color: val.color,
+                fontSize: val.fontSize,
+                textDecoration: val.textDecoration,
+                textAlign: val.textAlign,
+                fontUrl: val.fontFile,
+            };
+        } else if (val !== undefined && typeof val !== 'object') {
+            out[f] = val;
         }
     });
 
-    // 2) for each image field, only overwrite the blob if JSON gave us a data‑URL,
-    //    but always pull in the filename
+    // File/image fields
     IMAGE_FIELDS.forEach(f => {
-        const urlKey = (f + 'ImageUrl') as keyof Card;
-        const nameKey = (f + 'Image') as keyof JsonCard;
-
-        const maybeUrl = parsed[urlKey] as unknown;
-        const maybeName = parsed[nameKey];
-
-        if (typeof maybeUrl === 'string' && maybeUrl.startsWith('data:')) {
-            out[urlKey] = maybeUrl;
-        }
-        if (maybeName) {
-            out[`${f}Name`] = maybeName;
+        const nested = parsed[f];
+        if (isJsonFileRegion(nested)) {
+            if (nested.fileData.startsWith('data:')) {
+                out[`${f}ImageUrl` as keyof Card] = nested.fileData;
+            } else {
+                out[`${f}Name` as keyof Card] = nested.fileData;
+            }
+            imageOverrides[f] = {
+                x: nested.x,
+                y: nested.y,
+                maxWidth: nested.maxWidth,
+                maxHeight: nested.maxHeight,
+            };
+        } else {
+            const urlKey = `${f}ImageUrl`;
+            const nameKey = `${f}Image`;
+            const maybeUrl = parsed[urlKey];
+            const maybeName = parsed[nameKey];
+            if (typeof maybeUrl === 'string') out[urlKey as keyof Card] = maybeUrl;
+            if (maybeName) out[`${f}Name` as keyof Card] = maybeName;
         }
     });
 
-    return out as Card;
+    return { card: out as Card, textOverrides, imageOverrides };
 }
